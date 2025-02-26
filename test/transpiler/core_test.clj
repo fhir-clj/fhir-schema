@@ -39,6 +39,7 @@
 
 (deftest structure-definition-test
   (golden-test fhir-schema-content "test/golden/patient.sd.json")
+  (golden-test fhir-schema-content "test/golden/bundle.sd.json")
   (golden-test fhir-schema-content "test/golden/string.sd.json"))
 
 (comment
