@@ -1,4 +1,4 @@
-.PHONY: repl test clean build run format
+.PHONY: repl test clean build run format lint
 
 # Start a REPL
 repl:
@@ -7,6 +7,12 @@ repl:
 # Run tests
 test:
 	clj -M:test
+
+update-golden:
+	UPDATE_GOLDEN=true clj -M:test
+
+lint:
+	clj -M:lint
 
 # Clean target directory
 clean:
@@ -17,7 +23,7 @@ clean:
 build:
 	clj -T:build uber
 
-# Run the application
+# Run theapplication
 run:
 	clj -M -m transpiler.core
 
