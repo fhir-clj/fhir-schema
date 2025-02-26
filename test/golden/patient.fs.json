@@ -28,9 +28,7 @@
     },
     "managingOrganization" : {
       "short" : "Organization that is the custodian of the patient record",
-      "refers" : [ {
-        "resource" : "Organization"
-      } ],
+      "refers" : [ "http://hl7.org/fhir/StructureDefinition/Organization" ],
       "type" : "Reference",
       "isSummary" : true,
       "index" : 29
@@ -91,11 +89,7 @@
       "elements" : {
         "other" : {
           "short" : "The other patient or related person resource that the link refers to",
-          "refers" : [ {
-            "resource" : "Patient"
-          }, {
-            "resource" : "RelatedPerson"
-          } ],
+          "refers" : [ "http://hl7.org/fhir/StructureDefinition/RelatedPerson", "http://hl7.org/fhir/StructureDefinition/Patient" ],
           "type" : "Reference",
           "isSummary" : true,
           "index" : 31
@@ -163,13 +157,7 @@
     },
     "generalPractitioner" : {
       "short" : "Patient's nominated primary care provider",
-      "refers" : [ {
-        "resource" : "Organization"
-      }, {
-        "resource" : "Practitioner"
-      }, {
-        "resource" : "PractitionerRole"
-      } ],
+      "refers" : [ "http://hl7.org/fhir/StructureDefinition/Practitioner", "http://hl7.org/fhir/StructureDefinition/PractitionerRole", "http://hl7.org/fhir/StructureDefinition/Organization" ],
       "type" : "Reference",
       "array" : true,
       "index" : 28
@@ -243,9 +231,7 @@
         },
         "organization" : {
           "short" : "Organization that is associated with the contact",
-          "refers" : [ {
-            "resource" : "Organization"
-          } ],
+          "refers" : [ "http://hl7.org/fhir/StructureDefinition/Organization" ],
           "type" : "Reference",
           "index" : 23
         },

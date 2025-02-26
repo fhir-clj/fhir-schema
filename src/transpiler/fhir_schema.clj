@@ -244,10 +244,10 @@
           (when tp
             (->> (if (vector? tp) tp [tp])
                  (mapv (fn [tp]
-                         (assert (string? tp) [tp item])
-                         (if (base-profile? tp)
-                           {:resource (last (str/split tp #"/"))}
-                           {:profile tp})))))))))
+                         (assert (string? tp) [tp item]) tp
+                         #_(if (base-profile? tp) ;; commented - decided to follow the specification https://fhir-schema.github.io/fhir-schema/reference/element.html?highlight=reference#schema-5
+                             {:resource (last (str/split tp #"/"))}
+                             {:profile tp})))))))))
 
 (defn preprocess-element [e]
   (let [tp (get-in e [:type 0 :code])]
