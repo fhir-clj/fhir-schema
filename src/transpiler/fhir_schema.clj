@@ -309,13 +309,35 @@
 (defn clear-element [e]
   (dissoc e :path :slicing :sliceName :id :mapping :extension :example :alias :condition :comment :definition :requirements))
 
+(defn content-reference->element-reference [content-reference structure-definition]
+  (let [[res elem :as path] (str/split content-reference #"[.]")]
+    (assert (= 2 (count path)))
+    (assert (= (str "#" (:id structure-definition)) res))
+    [(:url structure-definition) "elements" elem]))
+
+(defn build-element-content-reference [elem structure-definition]
+  (if-let [ref (:contentReference elem)]
+    (-> elem
+        (assoc :element-reference
+               (content-reference->element-reference ref structure-definition))
+        (dissoc :contentReference))
+    elem))
+
+(comment
+  (build-element-content-reference
+   {:contentReference "#Bundle.link"}
+   {:id "Bundle"
+    :url "http://hl7.org/fhir/StructureDefinition/Bundle"}))
+
+
 ;; TODO add test for constraint
-(defn build-element [e]
+(defn build-element [e structure-definition]
   (-> e
       preprocess-element
       clear-element
       build-element-binding
       build-element-constraints
+      (build-element-content-reference structure-definition)
       build-element-extension
       build-element-cardinality
       build-element-type
@@ -354,20 +376,28 @@
   (let [res (build-resource-header structure-definition)]
     (loop [value-stack [res]
            prev-path EMPTY_PATH
-           els (get-differential structure-definition)
+           [elem & rest-elems] (get-differential structure-definition)
            idx 0]
-      (if (empty? els)
+      (cond
+        (nil? elem)
         (let [actions (calculate-actions prev-path EMPTY_PATH)
               new-value-stack (apply-actions value-stack actions {:index idx})]
           (assert (= 1 (count new-value-stack)))
           (first new-value-stack))
-        (let [e (first els)]
-          (if (choice? e)
-            (recur value-stack prev-path (into (union-elements e) (rest els)) (inc idx))
-            (let [new-path        (enrich-path prev-path (parse-path e))
-                  actions         (calculate-actions prev-path new-path)
-                  new-value-stack (apply-actions value-stack actions (assoc (build-element e) :index idx))]
-              (recur new-value-stack new-path (rest els) (inc idx)))))))))
+
+        (choice? elem)
+        (recur value-stack prev-path (into (union-elements elem) rest-elems) (inc idx))
+
+        :else
+        (let [new-path        (enrich-path prev-path (parse-path elem))
+              actions         (calculate-actions prev-path new-path)
+              fs-elem         (-> elem
+                                  (build-element structure-definition)
+                                  (assoc :index idx))
+              new-value-stack (apply-actions value-stack
+                                             actions
+                                             fs-elem)]
+          (recur new-value-stack new-path rest-elems (inc idx)))))))
 
 ;; (defn transform-constraints [element]
 ;;   (->> (:constraint element)
