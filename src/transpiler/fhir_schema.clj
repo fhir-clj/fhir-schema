@@ -21,7 +21,7 @@
 
 (defn parse-int [x]
   (try (Integer/parseInt x)
-       (catch Exception e nil)))
+       (catch Exception _e nil)))
 
 (defn parse-path [el]
   (let [p (:path el)

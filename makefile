@@ -1,4 +1,7 @@
-.PHONY: repl test clean build run format format-check lint
+.PHONY: repl test clean build run format format-check lint install-hooks
+
+install-hooks:
+	@bash scripts/install-hooks.sh
 
 # Start a REPL
 repl:
@@ -23,7 +26,7 @@ clean:
 build:
 	clj -T:build uber
 
-# Run theapplication
+# Run the application
 run:
 	clj -M -m transpiler.core
 
