@@ -3,7 +3,6 @@
             [transpiler.fhir-schema :refer [parse-path get-common-path calculate-actions translate]]
             [matcho.core :as matcho]))
 
-
 (deftest test-algorythm
   (matcho/match
    (parse-path {:path "R.a"})
@@ -32,7 +31,6 @@
     (conj (parse-path  {:path "R.a.c" :sliceName "s1"}) {:el :b})
     (conj (parse-path  {:path "R.a.c" :sliceName "s2"})))
     [{:el :a} {:el :c}])
-
 
   (matcho/match
    (calculate-actions
@@ -123,7 +121,6 @@
     {:required #{"x"}
      :elements {:x {:array true, :_required nil? :min 1 :max 10}}})
 
-
   (matcho/match
    (translate {:differential {:element [{:path "A.x" :type [{:code "string"}]}]}})
     {:elements {:x {:type "string"}}})
@@ -194,8 +191,7 @@
           :min 4 :max 5
           :match {:coding [{:system "CodeSystem", :code "RAD"}]}}}}}}})
 
-
-  ;;0.1ms
+;;0.1ms
   (translate
    {:url "http://hl7.org/fhir/StructureDefinition/Profile",
     :baseDefinition "http://hl7.org/fhir/StructureDefinition/Observation"
@@ -220,7 +216,6 @@
       {:id "Observation.component:diastolic.valueQuantity.unit", :path "Observation.component.valueQuantity.unit", :min 1, :max "1", :type [{:code "string"}], :mustSupport true}
       {:id "Observation.component:diastolic.valueQuantity.system", :path "Observation.component.valueQuantity.system", :min 1, :max "1", :type [{:code "uri"}], :fixedUri "http://unitsofmeasure.org", :mustSupport true}
       {:id "Observation.component:diastolic.valueQuantity.code", :path "Observation.component.valueQuantity.code", :min 1, :max "1", :type [{:code "code"}], :fixedCode "mm[Hg]", :mustSupport true}]}})
-
 
   (matcho/match
    (calculate-actions
@@ -300,7 +295,6 @@
       {:type "Reference",
        :refers nil?}}})
 
-
   {:id "Extension.extension:ombCategory"
    :path "Extension.extension",
    :sliceName "ombCategory",
@@ -311,8 +305,7 @@
    :type [{:code "Extension"}],
    :mustSupport true}
 
-
-  ;; that's does not work
+;; that's does not work
   ;; why just slicing does not work
   (matcho/match
    (translate

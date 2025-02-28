@@ -178,7 +178,6 @@
 ;;           (str/join "\n"))))
 ;;   (println "  |-----------------------------------"))
 
-
 (defn apply-actions [value-stack actions value]
   ;; TODO: if next is enter - enter with empty value
   (loop [stack value-stack
@@ -194,7 +193,6 @@
                     :exit        (pop-and-update stack (fn [last-v peek-v] (add-element el last-v peek-v)))
                     :exit-slice  (pop-and-update stack (fn [last-v peek-v] (build-slice action last-v peek-v))))]
         (recur stack as)))))
-
 
 ;; alorythm
 ;; enrich path from previous
@@ -329,7 +327,6 @@
    {:id "Bundle"
     :url "http://hl7.org/fhir/StructureDefinition/Bundle"}))
 
-
 ;; TODO add test for constraint
 (defn build-element [e structure-definition]
   (-> e
@@ -342,7 +339,6 @@
       build-element-cardinality
       build-element-type
       process-patterns))
-
 
 (defn build-resource-header [structure-definition]
   (-> (select-keys structure-definition [:id :name :type :url :version :description :package_name :package_version :package_id :kind :derivation])
@@ -357,7 +353,6 @@
 (defn get-differential [structure-definition]
   (->> (get-in structure-definition [:differential :element])
        (filterv (fn [{p :path}] (str/includes? p ".")))))
-
 
 ;; TODO: context {elements for elements, elements for resoruce}
 ;; TODO: discriminator [50%]

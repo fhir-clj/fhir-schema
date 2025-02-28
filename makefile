@@ -1,4 +1,4 @@
-.PHONY: repl test clean build run format lint
+.PHONY: repl test clean build run format format-check lint
 
 # Start a REPL
 repl:
@@ -29,7 +29,10 @@ run:
 
 # Format code (requires cljfmt)
 format:
-	clj -M:cljfmt fix
+	clj -M:format fix
+
+format-check:
+	clj -M:format check
 
 # Install dependencies
 deps:
