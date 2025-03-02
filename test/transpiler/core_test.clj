@@ -40,7 +40,12 @@
 (deftest structure-definition-test
   (golden-test fhir-schema-content "test/golden/patient.sd.json")
   (golden-test fhir-schema-content "test/golden/bundle.sd.json")
-  (golden-test fhir-schema-content "test/golden/string.sd.json"))
+  (golden-test fhir-schema-content "test/golden/primitive/string.sd.json")
+  (golden-test fhir-schema-content "test/golden/primitive/unsignedInt.sd.json")
+  (golden-test fhir-schema-content "test/golden/primitive/boolean.sd.json")
+  (golden-test fhir-schema-content "test/golden/complex/element.sd.json")
+  (golden-test fhir-schema-content "test/golden/complex/address.sd.json")
+  (golden-test fhir-schema-content "test/golden/complex/backbone-element.sd.json"))
 
 (comment
   (run-tests 'transpiler.core-test)

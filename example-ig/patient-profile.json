@@ -1,0 +1,31 @@
+{
+    "abstract": false,
+    "url": "http://hl7.org/fhir/example/StructureDefinition/EXAMPLEPATIENT",
+    "experimental": false,
+    "id": "EXAMPLEPATIENT",
+    "name": "EXAMPLEPATIENT",
+    "status": "active",
+    "kind": "resource",
+    "type": "Patient",
+    "baseDefinition": "http://hl7.org/fhir/StructureDefinition/Patient",
+    "version": "0.0.1",
+    "date": "2023-10-17",
+    "differential": {
+      "element": [
+        {
+          "id": "Patient",
+          "path": "Patient",
+          "mustSupport": false
+        },
+        {
+            "id": "Patient.name",
+            "min": 1,
+            "path": "Patient.name",
+            "mustSupport": true
+          }
+      ]
+    },
+    "resourceType": "StructureDefinition",
+    "derivation": "constraint",
+    "description": "EXAMPLE FOR BEDASOFTWARE"
+  }

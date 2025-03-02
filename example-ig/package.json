@@ -1,0 +1,10 @@
+{
+    "version" : "1.0.0",
+    "fhirVersion" : ["4.0.1"],
+    "dependencies": {
+        "hl7.fhir.r4.core": "4.0.1"
+    },
+    "date" : "20241030141732",
+    "name" : "fhir.example.core"
+  }
+  
