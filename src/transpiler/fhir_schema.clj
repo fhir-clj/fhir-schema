@@ -308,8 +308,7 @@
   (dissoc e :path :slicing :sliceName :id :mapping :extension :example :alias :condition :comment :definition :requirements))
 
 (defn content-reference->element-reference [content-reference structure-definition]
-  (let [[res & path-parts] (-> content-reference (subs 1) (str/split #"[.]"))]
-    (assert (= (:id structure-definition) res))
+  (let [[& path-parts] (-> content-reference (subs 1) (str/split #"[.]"))]
     (reduce (fn [result part] (conj (conj result "elements") part))
             [(:url structure-definition)]
             path-parts)))
