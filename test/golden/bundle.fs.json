@@ -77,7 +77,7 @@
         "link" : {
           "short" : "Links related to this entry",
           "isSummary" : true,
-          "element-reference" : [ "http://hl7.org/fhir/StructureDefinition/Bundle", "elements", "link" ],
+          "elementReference" : [ "http://hl7.org/fhir/StructureDefinition/Bundle", "elements", "link" ],
           "array" : true,
           "index" : 8
         },

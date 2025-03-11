@@ -316,7 +316,7 @@
 (defn build-element-content-reference [elem structure-definition]
   (if-let [ref (:contentReference elem)]
     (-> elem
-        (assoc :element-reference
+        (assoc :elementReference
                (content-reference->element-reference ref structure-definition))
         (dissoc :contentReference))
     elem))
