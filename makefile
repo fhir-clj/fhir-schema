@@ -1,13 +1,22 @@
-.PHONY: repl test clean build run format format-check lint install-hooks
+.PHONY: install-hooks repl test clean build run format lint check fix check-json update-golden deps
+
+all: check
 
 install-hooks:
 	@bash scripts/install-hooks.sh
 
-# Start a REPL
+deps:
+	clj -P
+
 repl:
 	clj -M:dev -m nrepl.cmdline --middleware "[cider.nrepl/cider-middleware]"
 
-# Run tests
+check: test lint format-check
+
+fix: format update-golden
+
+###########################################################
+
 test:
 	clj -M:test
 
@@ -17,26 +26,19 @@ update-golden:
 lint:
 	clj -M:lint
 
-# Clean target directory
-clean:
-	rm -rf target
-	rm -rf .cpcache
-
-# Build uberjar
-build:
-	clj -T:build uber
-
-# Run the application
-run:
-	clj -M -m transpiler.core
-
-# Format code (requires cljfmt)
 format:
 	clj -M:format fix
 
 format-check:
 	clj -M:format check
 
-# Install dependencies
-deps:
-	clj -P
+###########################################################
+
+run:
+	clj -M -m transpiler.core
+
+build:
+	clj -T:build uber
+
+clean:
+	rm -rf target .cpcache
