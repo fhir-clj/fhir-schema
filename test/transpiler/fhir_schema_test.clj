@@ -1,4 +1,4 @@
-(ns transpiler.test
+(ns transpiler.fhir-schema-test
   (:require [clojure.test :refer [deftest testing]]
             [transpiler.fhir-schema :refer [parse-path get-common-path calculate-actions translate]]
             [matcho.core :as matcho]))
@@ -376,6 +376,6 @@
        :elements
        {:related
         {:type "Reference",
-         :refers [{:profile "http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/genomics-report"}]}}}}}))
+         :refers ["http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/genomics-report"]}}}}}))
 
 (comment)

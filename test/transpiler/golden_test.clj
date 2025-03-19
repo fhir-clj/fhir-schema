@@ -1,4 +1,4 @@
-(ns transpiler.core-test
+(ns transpiler.golden-test
   (:require [clojure.test :refer :all]
             [transpiler.fhir-schema :as fhir-schema]
             [cheshire.core :as json]
