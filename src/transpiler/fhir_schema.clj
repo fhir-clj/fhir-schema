@@ -250,9 +250,12 @@
 (defn preprocess-element [e]
   (let [tp (get-in e [:type 0 :code])]
     (cond (= tp "Reference")
-          (let [refers (build-refers (:type e))]
+          (let [refers (->> (build-refers (:type e))
+                            (distinct)
+                            (sort)
+                            (vec))]
             (cond-> (assoc e :type [{:code "Reference"}])
-              (seq refers) (assoc :refers (into #{} refers))))
+              (seq refers) (assoc :refers refers)))
           :else e)))
 
 (defn build-element-binding [e]

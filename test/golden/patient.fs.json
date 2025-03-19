@@ -89,7 +89,7 @@
       "elements" : {
         "other" : {
           "short" : "The other patient or related person resource that the link refers to",
-          "refers" : [ "http://hl7.org/fhir/StructureDefinition/RelatedPerson", "http://hl7.org/fhir/StructureDefinition/Patient" ],
+          "refers" : [ "http://hl7.org/fhir/StructureDefinition/Patient", "http://hl7.org/fhir/StructureDefinition/RelatedPerson" ],
           "type" : "Reference",
           "isSummary" : true,
           "index" : 31
@@ -157,7 +157,7 @@
     },
     "generalPractitioner" : {
       "short" : "Patient's nominated primary care provider",
-      "refers" : [ "http://hl7.org/fhir/StructureDefinition/Practitioner", "http://hl7.org/fhir/StructureDefinition/PractitionerRole", "http://hl7.org/fhir/StructureDefinition/Organization" ],
+      "refers" : [ "http://hl7.org/fhir/StructureDefinition/Organization", "http://hl7.org/fhir/StructureDefinition/Practitioner", "http://hl7.org/fhir/StructureDefinition/PractitionerRole" ],
       "type" : "Reference",
       "array" : true,
       "index" : 28
