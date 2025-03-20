@@ -302,10 +302,20 @@
                                          mx  (assoc :max mx)))
        (required-element? e) (assoc :_required true)))))
 
+(defn extract-type-from-extension
+  "THAT'S A WEIRD CASE IDK WHY IT EXISTS I WISH IT DIDN'T"
+  [e]
+  (let [extension (get-in e [:type 0 :extension 0])]
+    (when (= (get-in extension [:url]) "http://hl7.org/fhir/StructureDefinition/structuredefinition-fhir-type")
+      (get-in extension [:valueUrl]))))
+
 (defn build-element-type [e]
   (assert (<= (count (get-in e [:type])) 1) (pr-str e))
-  (let [tp (get-in e [:type 0 :code])]
-    (cond-> e (:type e) (assoc :type tp))))
+  (let [type-from-extension (extract-type-from-extension e)
+        tp (get-in e [:type 0 :code])]
+    (cond type-from-extension (assoc e :type type-from-extension)
+          (:type e) (assoc e :type tp)
+          :else e)))
 
 (defn clear-element [e]
   (dissoc e :path :slicing :sliceName :id :mapping :extension :example :alias :condition :comment :definition :requirements))

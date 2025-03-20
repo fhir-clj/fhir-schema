@@ -209,7 +209,7 @@
     },
     "url" : {
       "short" : "identifies the meaning of the extension",
-      "type" : "http://hl7.org/fhirpath/System.String",
+      "type" : "uri",
       "representation" : [ "xmlAttr" ],
       "index" : 0
     },
@@ -316,7 +316,6 @@
       "index" : 20
     }
   },
-  "id" : "Extension",
   "class" : "extension",
   "kind" : "complex-type",
   "url" : "http://hl7.org/fhir/StructureDefinition/Extension",
