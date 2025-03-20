@@ -370,32 +370,36 @@
 ;; 3 calculate actions from path and previous path
 ;; 4 apply actions
 
-(defn translate [structure-definition]
-  (let [res (build-resource-header structure-definition)]
-    (loop [value-stack [res]
-           prev-path EMPTY_PATH
-           [elem & rest-elems] (get-differential structure-definition)
-           idx 0]
-      (cond
-        (nil? elem)
-        (let [actions (calculate-actions prev-path EMPTY_PATH)
-              new-value-stack (apply-actions value-stack actions {:index idx})]
-          (assert (= 1 (count new-value-stack)))
-          (first new-value-stack))
+(defn translate
+  ([structure-definition]
+   (translate {} structure-definition))
+  ([{package-meta :package-meta} structure-definition]
+   (let [res (cond-> (build-resource-header structure-definition)
+               package-meta (assoc :package-meta package-meta))]
+     (loop [value-stack [res]
+            prev-path EMPTY_PATH
+            [elem & rest-elems] (get-differential structure-definition)
+            idx 0]
+       (cond
+         (nil? elem)
+         (let [actions (calculate-actions prev-path EMPTY_PATH)
+               new-value-stack (apply-actions value-stack actions {:index idx})]
+           (assert (= 1 (count new-value-stack)))
+           (first new-value-stack))
 
-        (choice? elem)
-        (recur value-stack prev-path (into (union-elements elem) rest-elems) (inc idx))
+         (choice? elem)
+         (recur value-stack prev-path (into (union-elements elem) rest-elems) (inc idx))
 
-        :else
-        (let [new-path        (enrich-path prev-path (parse-path elem))
-              actions         (calculate-actions prev-path new-path)
-              fs-elem         (-> elem
-                                  (build-element structure-definition)
-                                  (assoc :index idx))
-              new-value-stack (apply-actions value-stack
-                                             actions
-                                             fs-elem)]
-          (recur new-value-stack new-path rest-elems (inc idx)))))))
+         :else
+         (let [new-path        (enrich-path prev-path (parse-path elem))
+               actions         (calculate-actions prev-path new-path)
+               fs-elem         (-> elem
+                                   (build-element structure-definition)
+                                   (assoc :index idx))
+               new-value-stack (apply-actions value-stack
+                                              actions
+                                              fs-elem)]
+           (recur new-value-stack new-path rest-elems (inc idx))))))))
 
 ;; (defn transform-constraints [element]
 ;;   (->> (:constraint element)
