@@ -46,6 +46,7 @@
   (golden-test fhir-schema-content "test/golden/primitive/boolean.sd.json")
   (golden-test fhir-schema-content "test/golden/complex/element.sd.json")
   (golden-test fhir-schema-content "test/golden/complex/address.sd.json")
+  (golden-test fhir-schema-content "test/golden/complex/extension.sd.json")
   (golden-test fhir-schema-content "test/golden/complex/backbone-element.sd.json"))
 
 (comment
