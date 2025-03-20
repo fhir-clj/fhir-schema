@@ -551,7 +551,6 @@
       "index" : 19
     }
   },
-  "id" : "Questionnaire",
   "class" : "resource",
   "kind" : "resource",
   "url" : "http://hl7.org/fhir/StructureDefinition/Questionnaire",

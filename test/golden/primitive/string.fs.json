@@ -3,7 +3,6 @@
   "derivation" : "specialization",
   "name" : "string",
   "type" : "string",
-  "id" : "string",
   "class" : "primitive-type",
   "kind" : "primitive-type",
   "url" : "http://hl7.org/fhir/StructureDefinition/string",

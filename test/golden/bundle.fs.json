@@ -214,7 +214,6 @@
       "index" : 27
     }
   },
-  "id" : "Bundle",
   "class" : "resource",
   "kind" : "resource",
   "url" : "http://hl7.org/fhir/StructureDefinition/Bundle",

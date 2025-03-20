@@ -344,7 +344,7 @@
       process-patterns))
 
 (defn build-resource-header [structure-definition]
-  (-> (select-keys structure-definition [:id :name :type :url :version :description :package_name :package_version :package_id :kind :derivation])
+  (-> (select-keys structure-definition [:name :type :url :version :description :package_name :package_version :package_id :kind :derivation])
       (cond-> (:baseDefinition structure-definition) (assoc :base (:baseDefinition structure-definition)))
       (cond-> (:abstract structure-definition) (assoc :abstract true))
       (assoc :class

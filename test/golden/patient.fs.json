@@ -243,7 +243,6 @@
       }
     }
   },
-  "id" : "Patient",
   "class" : "resource",
   "kind" : "resource",
   "url" : "http://hl7.org/fhir/StructureDefinition/Patient",

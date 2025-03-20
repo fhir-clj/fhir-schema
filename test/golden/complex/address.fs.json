@@ -77,7 +77,6 @@
       "index" : 2
     }
   },
-  "id" : "Address",
   "class" : "complex-type",
   "kind" : "complex-type",
   "url" : "http://hl7.org/fhir/StructureDefinition/Address",

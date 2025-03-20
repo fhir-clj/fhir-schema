@@ -15,7 +15,6 @@
       "index" : 0
     }
   },
-  "id" : "BackboneElement",
   "class" : "complex-type",
   "kind" : "complex-type",
   "url" : "http://hl7.org/fhir/StructureDefinition/BackboneElement",

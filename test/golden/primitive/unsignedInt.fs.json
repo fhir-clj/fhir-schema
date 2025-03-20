@@ -3,7 +3,6 @@
   "derivation" : "specialization",
   "name" : "unsignedInt",
   "type" : "unsignedInt",
-  "id" : "unsignedInt",
   "class" : "primitive-type",
   "kind" : "primitive-type",
   "url" : "http://hl7.org/fhir/StructureDefinition/unsignedInt",
