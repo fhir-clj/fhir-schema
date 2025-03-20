@@ -374,14 +374,16 @@
   ([structure-definition]
    (translate {} structure-definition))
   ([{package-meta :package-meta} structure-definition]
-   (let [res (cond-> (build-resource-header structure-definition)
+   (let [is-primitive (= "primitive-type" (:kind structure-definition))
+         res (cond-> (build-resource-header structure-definition)
                package-meta (assoc :package-meta package-meta))]
      (loop [value-stack [res]
             prev-path EMPTY_PATH
             [elem & rest-elems] (get-differential structure-definition)
             idx 0]
        (cond
-         (nil? elem)
+         (or (nil? elem)
+             is-primitive)
          (let [actions (calculate-actions prev-path EMPTY_PATH)
                new-value-stack (apply-actions value-stack actions {:index idx})]
            (assert (= 1 (count new-value-stack)))

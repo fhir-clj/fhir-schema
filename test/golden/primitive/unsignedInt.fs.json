@@ -3,14 +3,6 @@
   "derivation" : "specialization",
   "name" : "unsignedInt",
   "type" : "unsignedInt",
-  "elements" : {
-    "value" : {
-      "representation" : [ "xmlAttr" ],
-      "short" : "Primitive value for unsignedInt",
-      "type" : "http://hl7.org/fhirpath/System.String",
-      "index" : 0
-    }
-  },
   "id" : "unsignedInt",
   "class" : "primitive-type",
   "kind" : "primitive-type",
