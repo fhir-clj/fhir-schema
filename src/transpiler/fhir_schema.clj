@@ -272,10 +272,12 @@
         (:binding decl)
         (assoc :binding (select-keys (:binding decl) [:strength :valueSet]))))
 
-    (:binding e)
+    (:valueSet (:binding e))
     (assoc e :binding (select-keys (:binding e) [:strength :valueSet]))
 
-    :else e))
+    :else ;; NOTE: dissoc to remove uncommon structure, e.g.:
+          ;; http://hl7.org/fhir/StructureDefinition/Task statusReason
+    (dissoc e :binding)))
 
 (defn build-element-constraints [e]
   (cond-> e
