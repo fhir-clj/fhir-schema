@@ -6,7 +6,7 @@
   "elements" : {
     "id" : {
       "short" : "Unique id for inter-element referencing",
-      "type" : "http://hl7.org/fhirpath/System.String",
+      "type" : "string",
       "representation" : [ "xmlAttr" ],
       "index" : 0
     }
