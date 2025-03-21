@@ -258,9 +258,24 @@
               (seq refers) (assoc :refers refers)))
           :else e)))
 
-(defn build-element-binding [e]
-  (cond-> e (:binding e)
-          (assoc :binding (select-keys (:binding e) [:strength :valueSet]))))
+(defn build-element-binding [e structure-definition]
+  (cond
+    (:choices e)
+    (dissoc e :binding)
+
+    (:choiceOf e)
+    (let [decl-path (str (:id structure-definition) "." (:choiceOf e) "[x]")
+          decl (->> (get-in structure-definition [:snapshot :element])
+                    (filter #(= decl-path (:path %)))
+                    (first))]
+      (cond-> e
+        (:binding decl)
+        (assoc :binding (select-keys (:binding decl) [:strength :valueSet]))))
+
+    (:binding e)
+    (assoc e :binding (select-keys (:binding e) [:strength :valueSet]))
+
+    :else e))
 
 (defn build-element-constraints [e]
   (cond-> e
@@ -345,7 +360,7 @@
   (-> e
       preprocess-element
       clear-element
-      build-element-binding
+      (build-element-binding structure-definition)
       build-element-constraints
       (build-element-content-reference structure-definition)
       build-element-extension

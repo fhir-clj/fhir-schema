@@ -227,10 +227,6 @@
             "answer" : {
               "short" : "Value for question comparison based on operator",
               "choices" : [ "answerBoolean", "answerDecimal", "answerInteger", "answerDate", "answerDateTime", "answerTime", "answerString", "answerCoding", "answerQuantity", "answerReference" ],
-              "binding" : {
-                "strength" : "example",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-answers"
-              },
               "index" : 32
             },
             "answerString" : {
@@ -279,10 +275,6 @@
             "value" : {
               "short" : "Answer value",
               "choices" : [ "valueInteger", "valueDate", "valueTime", "valueString", "valueCoding", "valueReference" ],
-              "binding" : {
-                "strength" : "example",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-answers"
-              },
               "index" : 51
             },
             "valueInteger" : {
@@ -396,10 +388,6 @@
             "value" : {
               "short" : "Actual value for initializing the question",
               "choices" : [ "valueBoolean", "valueDecimal", "valueInteger", "valueDate", "valueDateTime", "valueTime", "valueString", "valueUri", "valueAttachment", "valueCoding", "valueQuantity", "valueReference" ],
-              "binding" : {
-                "strength" : "example",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-answers"
-              },
               "index" : 61
             },
             "valueString" : {
