@@ -162,11 +162,10 @@
                {})))
 
 (defn add-element [el last-v peek-v]
-  (->
-   (if (= :extension el)
-     (assoc-in last-v [:extensions] (slicing-to-extensions peek-v))
-     (assoc-in last-v [:elements el] (dissoc peek-v :_required)))
-   (cond-> (:_required peek-v) (update :required (fn [x] (conj (or x #{}) (name el)))))))
+  (let [base (if (= :extension el)
+               (assoc-in last-v [:extensions] (slicing-to-extensions peek-v)) last-v)]
+    (cond-> (assoc-in base [:elements el] (dissoc peek-v :_required))
+      (:_required peek-v) (update :required (fn [x] (conj (or x #{}) (name el)))))))
 
 ;; (defn debug-action [item stack]
 ;;   (println :> item)

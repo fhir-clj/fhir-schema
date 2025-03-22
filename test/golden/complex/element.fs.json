@@ -9,6 +9,12 @@
       "type" : "string",
       "representation" : [ "xmlAttr" ],
       "index" : 0
+    },
+    "extension" : {
+      "short" : "Additional content defined by implementations",
+      "type" : "Extension",
+      "array" : true,
+      "index" : 1
     }
   },
   "extensions" : { },
