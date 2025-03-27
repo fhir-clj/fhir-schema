@@ -132,8 +132,27 @@
                                      vctx))))
                     vctx))))
 
+(defn validate-required [vctx schemas data]
+  (let [elements-idx  (->> schemas
+                           (reduce (fn [acc {sch :schema :as schema-entry}]
+                                     (->> sch
+                                          (reduce (fn [acc element-name]
+                                                    (update acc element-name conj schema-entry))
+                                                  acc))) {}))]
+    (->> elements-idx
+         (reduce (fn [vctx [el schemas]]
+                   (if (or (not (nil? (get data (keyword el))))
+                           (not (nil? (get data (keyword (str "_" el))))))
+                     vctx
+                     (add-error vctx {:type :require
+                                      :path (conj (:path vctx) (keyword el))
+                                      :message (str "Element " el " is required")
+                                      :schema-paths (mapv :path schemas)})))
+                 vctx))))
+
 (def VALUE_RULES {:type #'validate-type
                   :choices #'validate-choices
+                  :required #'validate-required
                   ;; :kind #'validate-kind
                   })
 
