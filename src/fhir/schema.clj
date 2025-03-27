@@ -17,6 +17,7 @@
   (update vctx :errors conj (update error :path (fn [x] (or x (:path vctx))))))
 
 (defn resolve-type   [vctx type-ref]
+  ;; (println :resolve-type type-ref (get-in vctx [:ctx :schemas type-ref]))
   (get-in vctx [:ctx :schemas type-ref]))
 
 (defn resolve-schema [vctx schema-ref]
@@ -29,7 +30,7 @@
 
 (defn add-type-schema [vctx type-ref schema-path]
   (assert (string? type-ref) (pr-str type-ref))
-  (println :add-type-schema type-ref)
+  ;; (println :add-type-schema type-ref)
   (if-let [sch (resolve-type vctx type-ref)]
     (update vctx :schemas conj {:schema sch :path (conj schema-path type-ref)})
     (add-error vctx {:type :type/unknown :schema type-ref :schema-path schema-path})))
@@ -46,7 +47,7 @@
        (first)))
 
 (defn validate-element [vctx {path :path v :value :as data-element}]
-  (println :validate-el (:path data-element) :is-array (is-array? vctx))
+  ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
   (if-let [array-schema  (is-array? vctx)]
     (if-not (sequential? v)
       (add-error vctx {:type :type/array
@@ -70,7 +71,7 @@
                {})))
 
 (defn validate-string [vctx schemas data]
-  (println "validate-string" (pr-str data) (string? data))
+  ;; (println "validate-string" (pr-str data) (string? data))
   (if (not (string? data))
     (add-error vctx {:type :type
                      :message "Expected type string"
@@ -86,7 +87,9 @@
          (reduce (fn [vctx [type schemas]]
                    (if-let [vld (get TYPE_VALIDATORS type)]
                      (vld vctx schemas data)
-                     (add-error vctx {:type :type/unknown :value type :path (:path vctx)})))
+                     ;; ignore if no type validator
+                     vctx ;;(add-error vctx {:type :type/unknown :value type :path (:path vctx)})
+                     ))
                  vctx))))
 
 (defn validate-kind [vctx schemas data]
@@ -97,7 +100,40 @@
                    vctx
                    ) vctx))))
 
+;; TODO: fix schema path
+(defn validate-choices [vctx schemas data]
+  ;; TODO extra data walk
+  (let [choice-elements (->> data
+                             (reduce (fn [acc [k v]]
+                                       ;; extra walk over schemas
+                                       (if-let [choice-of (->> schemas (some (fn [s] (get-in s [:parent :elements k :choiceOf]))))]
+                                         (assoc-in acc [(keyword choice-of) k] v)
+                                         acc))
+                                     {}))]
+    (->> choice-elements
+         (reduce-kv (fn [vctx k value]
+                      (let [vctx (if (< 1 (count value))
+                                   (add-error vctx {:type :choices/multiple
+                                                    :path (conj (:path vctx) k)
+                                                    :message (str "Only one choice element is allowd")
+                                                    :schema-path ()
+                                                    :value value})
+                                   vctx)]
+                        (->> schemas
+                             (reduce (fn [vctx {sch :schema schema-path :path}]
+                                       (if-let [choices (get sch k)]
+                                         (if (contains? (into #{} choices) (first (keys value)))
+                                           vctx
+                                           (add-error vctx {:type :choice/excluded
+                                                            :message (str "Choice element " (name k) " is not allowed, only " (str/join ", " choices))
+                                                            :path (conj (:path vctx) k)
+                                                            :schema-path schema-path}))
+                                         vctx))
+                                     vctx))))
+                    vctx))))
+
 (def VALUE_RULES {:type #'validate-type
+                  :choices #'validate-choices
                   ;; :kind #'validate-kind
                   })
 
@@ -144,9 +180,9 @@
        (into #{})))
 
 (defn *validate [vctx data]
-  (println :*validate (:schemas vctx) data)
+  ;; (println :*validate (:schemas vctx) data)
   (let [vctx  (add-schemas vctx data)
-        vctx (validate-value-rules vctx data)]
+        vctx  (validate-value-rules vctx data)]
     (if (map? data)
       (let [elements (data-elements vctx data)
             vctx (validate-elements-rules vctx elements data)]
