@@ -46,18 +46,6 @@
        (filter (fn [x] (get-in x [:schema :array])))
        (first)))
 
-(defn validate-element [vctx {path :path v :value :as data-element}]
-  ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
-  (if-let [array-schema  (is-array? vctx)]
-    (if-not (sequential? v)
-      (add-error vctx {:type :type/array
-                       :message (str "Expected array")
-                       :path path
-                       :value v
-                       :schema-path (conj (:path array-schema) :array)})
-      (let [vctx (validate-array-rules vctx v)]
-        (->> v (reduce-indexed (fn [vctx idx v] (*validate (assoc vctx :path (conj path idx)) v)) vctx))))
-    (*validate (assoc vctx :path (:path data-element)) v)))
 
 ;; handle primitive extensions
 (defn data-elements [vctx data]
@@ -132,6 +120,7 @@
                                      vctx))))
                     vctx))))
 
+;; {schemas: #{ {schema: ['name', 'birthDateh], schema-path: [], parent-schema: {}}}}
 (defn validate-required [vctx schemas data]
   (let [elements-idx  (->> schemas
                            (reduce (fn [acc {sch :schema :as schema-entry}]
@@ -150,12 +139,20 @@
                                       :schema-paths (mapv :path schemas)})))
                  vctx))))
 
-(def VALUE_RULES {:type #'validate-type
-                  :choices #'validate-choices
+(def VALUE_RULES {:type     #'validate-type
+                  :choices  #'validate-choices
                   :required #'validate-required
-                  ;; :kind #'validate-kind
+                  ;; :excluded
+                  ;; :constraints
+                  ;; :constants
+                  ;; :min/maxValue <- type dependant
+                  ;; :maxLength    <- type dependant
+                  ;; :bindings     <- type dependant
                   })
 
+;; us-patient-> base.Patient-> name -> HumanName -> assert
+
+;; provide all schemas
 (defn validate-value-rules [vctx data]
   ;; (println :validate-value (:schemas vctx) data)
   (->> VALUE_RULES
@@ -177,8 +174,21 @@
   (->> ELEMENTS_RULES
        (reduce (fn [vctx rule-name] vctx) vctx)))
 
+
+;; add schemas to schema-set - data.resourceTyp, data.meta.profile
+;; schema.type, schema.profile (sometimes with data - for example bundle type: Resource -> data.resourceType/meta.profile -> resolution)
+;;   entry: {type: Resource} ; {resourceType, profiles} => resolve(resourceType), resolve(prifles)
+;;   name: {type: HumanName} + resolve(HumanName)
+;;   extension: {type: Extensions} +  {url: 'exurl'} -> resolve(url)
+;;   nexted extensions - url is slice name not definition url
+;;   can be mixed with normal extensions (extensions on extensions?)
+;    Algorithm if we in nested extension and there is slice with this url - do not resolve url for this extensions
+;; initial:  Resource, data.resourceType/meta.profile
+;; extension: {slicing: {slice: {'ombCategory', {special-flag: ..}}}} look extension context before resolving url
+;; may be based on string format - ask Grahame and community
 (defn add-schemas [vctx data]
   (let [vctx (cond-> vctx
+               ;; todo check schema - should have type: Resource
                (:resourceType data) (add-type-schema (:resourceType data) [])
                #_#_(:type data)         (add-type-schema (:type data) []))
         vctx (->> (get-in data [:meta :profile])
@@ -190,6 +200,7 @@
                      vctx))
                  vctx))))
 
+;; handle primitive elements the right way
 (defn get-element-schemas [vctx {k :key :as data-element}]
   ;; (println :get-schemas k (:schemas vctx))
   (->> (:schemas vctx)
@@ -198,13 +209,41 @@
                    [{:schema el-schema :path (conj path k)}])))
        (into #{})))
 
+
+;; interpet array-keys
+;; validate-array
+(defn validate-element [vctx {path :path v :value :as data-element}]
+  ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
+  (if-let [array-schema  (is-array? vctx)]
+    (if-not (sequential? v)
+      (add-error vctx {:type :type/array
+                       :message (str "Expected array")
+                       :path path
+                       :value v
+                       :schema-path (conj (:path array-schema) :array)})
+      (let [vctx (validate-array-rules vctx v)]
+        (->> v (reduce-indexed (fn [vctx idx v] (*validate (assoc vctx :path (conj path idx)) v)) vctx))))
+    (if (sequential? v)
+      (add-error vctx {:type :type/array :message (str "Expected not array") :path path :value v})
+      (*validate (assoc vctx :path (:path data-element)) v))))
+
+;; {items: {schema}}  [x1 x2]  -> x1 with schema
+;; {array: true, ..array-schema(min/max & sliceces)..,  ...element-schema...}
+
+;; patient
+;;    name: max(1) -> scalar: true
+;; us-patient
+;;    name: max(1) -> max:1 (array: false?) -> need lookup
+;; because FHIR SD to Schema should be stateless - we could not say scalar:true or array: false
+
 (defn *validate [vctx data]
   ;; (println :*validate (:schemas vctx) data)
   (let [vctx  (add-schemas vctx data)
         vctx  (validate-value-rules vctx data)]
-    (if (map? data)
+    (if (map? data) ;; if at least one schema has elements + the composite type - complex-type etc; i.e not primitive
+      ;; handle primitives _birthDate -> schema resolution
       (let [elements (data-elements vctx data)
-            vctx (validate-elements-rules vctx elements data)]
+            vctx     (validate-elements-rules vctx elements data)]
         (->> elements
              (reduce (fn [vctx [_ data-element]]
                        (->
@@ -214,6 +253,9 @@
                         (assoc :schemas (:schemas vctx))))
                      vctx)))
       vctx)))
+
+;; birthDate.extension.slicing
+;; _birthDate -> get schemas (look inside birthDate)
 
 (defn mk-validation-context [ctx schema-refs resource]
   (let [vctx {:ctx ctx :errors [] :deferreds [] :resource resource :path [] :schemas #{}}]
