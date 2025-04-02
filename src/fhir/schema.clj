@@ -35,11 +35,43 @@
     (update vctx :schemas conj {:schema sch :path (conj schema-path type-ref)})
     (add-error vctx {:type :type/unknown :schema type-ref :schema-path schema-path})))
 
-(def ARRAY_RULES [:min :max :slicing])
+;; TODO: schema path
+(defn validate-minmax [vctx v]
+  (let [min-sch (->> (:schemas vctx)
+                     (filter (fn [x] (get-in x [:schema :min])))
+                     (sort-by (fn [x] (get-in x [:schema :min])))
+                     first)
+        min-v (get-in min-sch [:schema :min])
+        max-sch (->> (:schemas vctx)
+                     (filter  (fn [x] (get-in x [:schema :max])))
+                     (sort-by (fn [x] (get-in x [:schema :max])))
+                     last)
+        max-v (get-in min-sch [:schema :max])
+        cnt (count v)]
+    (cond-> vctx
+      (and min-sch (< cnt min-v))
+      (add-error {:type :min :message (str "expected min=" min-v " got " cnt)
+                  :value cnt
+                  :expected min-v
+                  :schema-paths [(conj (:path min-sch) :min)]})
+
+      (and max-sch (> cnt max-v))
+      (add-error {:type :max
+                  :message (str "expected max=" max-v " got " cnt)
+                  :value cnt
+                  :expected max-v
+                  :schema-paths [(conj (:path max-sch) :max)]}))))
+
+(defn validate-slicing [vctx v]
+  vctx)
+
+(def ARRAY_RULES {:minmax #'validate-minmax
+                  :slicing #'validate-slicing})
 
 (defn validate-array-rules [vctx v]
   (->> ARRAY_RULES
-       (reduce (fn [vctx rule-name] vctx) vctx)))
+       (reduce (fn [vctx [_rule-name rule-fn]]
+                 (rule-fn vctx v)) vctx)))
 
 (defn is-array? [vctx]
   (->> (:schemas vctx)
@@ -200,32 +232,32 @@
                      vctx))
                  vctx))))
 
+(def primitive-schema {:elements {:id {:type "code"} :extension {:array true :type "Extension"}}})
 ;; handle primitive elements the right way
-(defn get-element-schemas [vctx {k :key :as data-element}]
-  ;; (println :get-schemas k (:schemas vctx))
-  (->> (:schemas vctx)
-       (mapcat (fn [{schema :schema path :path}]
-                 (when-let [el-schema (get-in schema [:elements k])]
-                   [{:schema el-schema :path (conj path k)}])))
-       (into #{})))
+(defn get-element-schemas [vctx k]
+  (println :get-schemas k (:schemas vctx))
+  (let [schemas (if (str/starts-with? (name k) "_") #{{:schema primitive-schema :path []}} #{})
+        schemas (->> (:schemas vctx)
+                     (mapcat (fn [{schema :schema path :path}]
+                               (when-let [el-schema (get-in schema [:elements k])]
+                                 [{:schema el-schema :path (conj path k)}])))
+                     (into schemas))]
+    (println :< schemas)
+    schemas))
 
 
 ;; interpet array-keys
 ;; validate-array
-(defn validate-element [vctx {path :path v :value :as data-element}]
+(defn validate-element [{path :path :as vctx} v]
   ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
   (if-let [array-schema  (is-array? vctx)]
     (if-not (sequential? v)
-      (add-error vctx {:type :type/array
-                       :message (str "Expected array")
-                       :path path
-                       :value v
-                       :schema-path (conj (:path array-schema) :array)})
+      (add-error vctx {:type :type/array :message (str "Expected array") :path path :value v :schema-path (conj (:path array-schema) :array)})
       (let [vctx (validate-array-rules vctx v)]
         (->> v (reduce-indexed (fn [vctx idx v] (*validate (assoc vctx :path (conj path idx)) v)) vctx))))
     (if (sequential? v)
       (add-error vctx {:type :type/array :message (str "Expected not array") :path path :value v})
-      (*validate (assoc vctx :path (:path data-element)) v))))
+      (*validate (assoc vctx :path path) v))))
 
 ;; {items: {schema}}  [x1 x2]  -> x1 with schema
 ;; {array: true, ..array-schema(min/max & sliceces)..,  ...element-schema...}
@@ -239,23 +271,30 @@
 (defn *validate [vctx data]
   ;; (println :*validate (:schemas vctx) data)
   (let [vctx  (add-schemas vctx data)
-        vctx  (validate-value-rules vctx data)]
-    (if (map? data) ;; if at least one schema has elements + the composite type - complex-type etc; i.e not primitive
-      ;; handle primitives _birthDate -> schema resolution
-      (let [elements (data-elements vctx data)
-            vctx     (validate-elements-rules vctx elements data)]
-        (->> elements
-             (reduce (fn [vctx [_ data-element]]
-                       (->
-                        (if-let [element-schemas (seq (get-element-schemas vctx data-element))]
-                          (validate-element (assoc vctx :schemas element-schemas :path (:path data-element)) data-element)
-                          (add-error vctx {:type :element/unknown :path (:path data-element)}))
-                        (assoc :schemas (:schemas vctx))))
-                     vctx)))
+        vctx  (validate-value-rules vctx data)
+        schemas (:schemas vctx)
+        path (:path vctx)]
+    ;; if at least one schema has elements + the composite type - complex-type etc; i.e not primitive
+    ;; handle primitives _birthDate -> schema resolution
+    ;; birthDate.extension.slicing
+    ;; _birthDate -> get schemas (look inside birthDate)
+    ;; to runs to aggregate primitive extensions
+    ;; especially arrays
+    ;; or tricky loop with removal of keys
+    ;; TODO: handle primitive extensions
+    ;; TODO: we can group by primitive extensions
+    ;; each primitive extension is validated by them-self in a group?
+    (if (map? data)
+      (->> data
+           (reduce
+            (fn [vctx [k v]]
+              (println :* k (:schemas vctx))
+              (if-let [element-schemas (seq (get-element-schemas (assoc vctx :path path :schemas schemas) k))]
+                (validate-element (assoc vctx :schemas element-schemas :path (conj path k)) v)
+                (add-error vctx {:type :element/unknown :path (conj path k)})))
+            vctx))
       vctx)))
 
-;; birthDate.extension.slicing
-;; _birthDate -> get schemas (look inside birthDate)
 
 (defn mk-validation-context [ctx schema-refs resource]
   (let [vctx {:ctx ctx :errors [] :deferreds [] :resource resource :path [] :schemas #{}}]
