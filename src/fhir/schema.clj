@@ -100,6 +100,11 @@
 
 (def TYPE_VALIDATORS {"string" #'validate-string})
 
+;; How to test with string?
+;; 1. kind = primitive, elements.value.type = http://hl7.org/fhirpath/System.String 
+;; 2. baseDefinition = http://hl7.org/fhir/StructureDefinition/string  - cross version
+
+
 ;; should we use kind?
 (defn validate-type [vctx schemas data]
   (let [type-idx (group-by :schema schemas)]
@@ -255,9 +260,6 @@
     ;; (println :< schemas)
     schemas))
 
-
-;; interpret array-keys
-;; validate-array
 (defn validate-element [{path :path :as vctx} v]
   ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
   (if-let [array-schema  (is-array? vctx)]
@@ -269,31 +271,13 @@
       (add-error vctx {:type :type/array :message (str "Expected not array") :path path :value v})
       (*validate (assoc vctx :path path) v))))
 
-;; {items: {schema}}  [x1 x2]  -> x1 with schema
-;; {array: true, ..array-schema(min/max & sliceces)..,  ...element-schema...}
-
-;; patient
-;;    name: max(1) -> scalar: true
-;; us-patient
-;;    name: max(1) -> max:1 (array: false?) -> need lookup
-;; because FHIR SD to Schema should be stateless - we could not say scalar:true or array: false
-
 (defn *validate [vctx data]
   ;; (println :*validate (:schemas vctx) data)
   (let [vctx  (add-schemas vctx data)
         vctx  (validate-value-rules vctx data)
         schemas (:schemas vctx)
         path (:path vctx)]
-    ;; if at least one schema has elements + the composite type - complex-type etc; i.e not primitive
-    ;; handle primitives _birthDate -> schema resolution
-    ;; birthDate.extension.slicing
-    ;; _birthDate -> get schemas (look inside birthDate)
-    ;; to runs to aggregate primitive extensions
-    ;; especially arrays
-    ;; or tricky loop with removal of keys
-    ;; TODO: handle primitive extensions
-    ;; TODO: we can group by primitive extensions
-    ;; each primitive extension is validated by them-self in a group?
+    ;;TODO: handle primitive extensions, especially arrays
     (if (map? data)
       (->> data
            (reduce
@@ -303,7 +287,6 @@
                 (add-error vctx {:type :element/unknown :path (conj path k)})))
             vctx))
       vctx)))
-
 
 (defn mk-validation-context [ctx schema-refs resource]
   (let [vctx {:ctx ctx :errors [] :deferreds [] :resource resource :path [] :schemas #{}}]
@@ -319,7 +302,3 @@
 (defn validate [ctx schema-refs resource]
   (let [vctx (mk-validation-context ctx schema-refs resource)]
     (select-keys (*validate vctx resource) [:errors :deferreds])))
-
-
-
-
