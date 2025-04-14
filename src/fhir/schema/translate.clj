@@ -325,8 +325,12 @@
     (when (= (get-in extension [:url]) "http://hl7.org/fhir/StructureDefinition/structuredefinition-fhir-type")
       (get-in extension [:valueUrl]))))
 
+(defn warn [msg]
+  (println (format "WARNING: %s" msg)))
+
 (defn build-element-type [e]
-  (assert (<= (count (get-in e [:type])) 1) (pr-str e))
+  (when-not (<= (count (get-in e [:type])) 1)
+    (warn (str "More than one type specified: " (get-in e [:type]))))
   (let [type-from-extension (extract-type-from-extension e)
         tp (get-in e [:type 0 :code])]
     (cond type-from-extension (assoc e :type type-from-extension)
