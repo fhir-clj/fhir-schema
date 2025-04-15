@@ -36,7 +36,6 @@
   (match-schema {:type "string"} 1 [{:type :type :path []}])
   (match-schema {:type "string"} true [{:type :type :path []}])
 
-
   (match-schema {:elements {:name {:type "string"}}} {:name "ok"} empty?)
 
   (match-schema {:elements {:name {:type "string"}}}
@@ -65,7 +64,6 @@
                 {:name [{:family "family" :ups "x"}]}
                 [{:type :element/unknown, :path [:name 0 :ups]}])
 
-
   (match-schema {:elements {:name {:array true
                                    :elements {:family {:type "string"}
                                               :type {:elements {:code {:type "string"}}}}}}}
@@ -81,7 +79,6 @@
                   :value 1,
                   :schema-path [:name :type :code :type "string" :type],
                   :path [:name 0 :type :code]}])
-
 
   (match-schema {:elements {:name {:array true :type "HumanName"}}}
                 {:name [{:family "f" :given ["g1" "g2"]}]}
@@ -154,7 +151,6 @@
                 {:name {:use "hotel"}}
                 [{:type :pattern :expected "home"}])
 
-
   {:elements {:type "string"}}
 
   {:kind "primitive-type"
@@ -187,6 +183,4 @@
   ;;TODO: bundles -> {:type "Resource"}
   ;;TODO: slices
   ;;TODO: constraints
-
-
   )

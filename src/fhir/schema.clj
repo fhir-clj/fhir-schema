@@ -62,7 +62,7 @@
                   :expected max-v
                   :schema-paths [(conj (:path max-sch) :max)]}))))
 
-(defn validate-slicing [vctx v]
+(defn validate-slicing [vctx _v]
   vctx)
 
 (def ARRAY_RULES {:minmax #'validate-minmax
@@ -77,7 +77,6 @@
   (->> (:schemas vctx)
        (filter (fn [x] (get-in x [:schema :array])))
        (first)))
-
 
 ;; handle primitive extensions
 (defn data-elements [vctx data]
@@ -104,7 +103,6 @@
 ;; 1. kind = primitive, elements.value.type = http://hl7.org/fhirpath/System.String 
 ;; 2. baseDefinition = http://hl7.org/fhir/StructureDefinition/string  - cross version
 
-
 ;; should we use kind?
 (defn validate-type [vctx schemas data]
   (let [type-idx (group-by :schema schemas)]
@@ -116,7 +114,6 @@
                      vctx ;;(add-error vctx {:type :type/unknown :value type :path (:path vctx)})
                      ))
                  vctx))))
-
 
 ;; TODO: fix schema path
 (defn validate-choices [vctx schemas data]
@@ -133,7 +130,7 @@
                       (let [vctx (if (< 1 (count value))
                                    (add-error vctx {:type :choices/multiple
                                                     :path (conj (:path vctx) k)
-                                                    :message (str "Only one choice element is allowd")
+                                                    :message "Only one choice element is allowd"
                                                     :schema-path ()
                                                     :value value})
                                    vctx)]
@@ -217,10 +214,9 @@
 
 (def ELEMENTS_RULES [:required :expected :choices :contstraint])
 
-(defn validate-elements-rules [vctx elements data]
+(defn validate-elements-rules [vctx _elements _data]
   (->> ELEMENTS_RULES
-       (reduce (fn [vctx rule-name] vctx) vctx)))
-
+       (reduce (fn [vctx _rule-name] vctx) vctx)))
 
 ;; add schemas to schema-set - data.resourceTyp, data.meta.profile
 ;; schema.type, schema.profile (sometimes with data - for example bundle type: Resource -> data.resourceType/meta.profile -> resolution)
@@ -264,11 +260,11 @@
   ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
   (if-let [array-schema  (is-array? vctx)]
     (if-not (sequential? v)
-      (add-error vctx {:type :type/array :message (str "Expected array") :path path :value v :schema-path (conj (:path array-schema) :array)})
+      (add-error vctx {:type :type/array :message "Expected array" :path path :value v :schema-path (conj (:path array-schema) :array)})
       (let [vctx (validate-array-rules vctx v)]
         (->> v (reduce-indexed (fn [vctx idx v] (*validate (assoc vctx :path (conj path idx)) v)) vctx))))
     (if (sequential? v)
-      (add-error vctx {:type :type/array :message (str "Expected not array") :path path :value v})
+      (add-error vctx {:type :type/array :message "Expected not array" :path path :value v})
       (*validate (assoc vctx :path path) v))))
 
 (defn *validate [vctx data]
@@ -290,13 +286,13 @@
 
 (defn mk-validation-context [ctx schema-refs resource]
   (let [vctx {:ctx ctx :errors [] :deferreds [] :resource resource :path [] :schemas #{}}]
-    (reduce (fn [vctx schema-ref] (add-schema-ref vctx schema-ref [schema-ref])) vctx schema-refs )))
+    (reduce (fn [vctx schema-ref] (add-schema-ref vctx schema-ref [schema-ref])) vctx schema-refs)))
 
 (defn validate-schemas [ctx schemas resource]
   (let [vctx (mk-validation-context ctx [] resource)
         vctx (->> schemas
-             (reduce (fn [vctx sch] (update vctx :schemas conj {:schema sch :path []}))
-                     vctx))]
+                  (reduce (fn [vctx sch] (update vctx :schemas conj {:schema sch :path []}))
+                          vctx))]
     (select-keys (*validate vctx resource) [:errors :deferreds])))
 
 (defn validate [ctx schema-refs resource]

@@ -1,6 +1,6 @@
 (ns transpiler.golden-test
   (:require [clojure.test :refer :all]
-            [transpiler.fhir-schema :as fhir-schema]
+            [fhir.schema.translate :as fhir-schema]
             [cheshire.core :as json]
             [clojure.string :as str]
             [clojure.java.io :as io]
