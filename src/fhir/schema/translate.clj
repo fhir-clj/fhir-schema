@@ -200,6 +200,7 @@
 (def EMPTY_PATH [])
 
 (defn choice? [e]
+  ;; FIXME: if type is a list with count > 1
   (str/ends-with? (:path e) "[x]"))
 
 (defn capitalize [s]

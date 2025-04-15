@@ -148,16 +148,33 @@
                  :schema {:elements {:a {:short :x.s2.a}, :b {:short :x.s2.b}}}}}}}}})
 
   (def union-els
-    [{:path "R.value[x]"  :type [{:code "string"} {:code "Quantity"}]}
+    [{:path "R.value[x]"  :type [{:code "string"}
+                                 {:code "Quantity"}]}
      {:path "R.valueQuantity.unit" :short "unit"}])
 
   (matcho/match
    (translate {:differential {:element union-els}})
     {:elements
-     {:value         {:choices ["valueString" "valueQuantity"]},
+     {:value         {:choices ["valueString"
+                                "valueQuantity"]},
       :valueString   {:type "string" :choiceOf "value"},
       :valueQuantity {:type "Quantity" :choiceOf "value"
                       :elements {:unit {:short "unit"}}}}})
+
+  (testing "Some times users don't add [x] suffix to element definition."
+    (def union-els-no-suffix
+      [{:path "R.value" :type [{:code "string"}
+                               {:code "Quantity"}]}
+       {:path "R.valueQuantity.unit" :short "unit"}])
+
+    (matcho/match
+     (translate {:differential {:element union-els-no-suffix}})
+      {:elements
+       {:value         {:choices ["valueString"
+                                  "valueQuantity"]},
+        :valueString   {:type "string" :choiceOf "value"},
+        :valueQuantity {:type "Quantity" :choiceOf "value"
+                        :elements {:unit {:short "unit"}}}}}))
 
   ;; (clojure.pprint/pprint (translate els))
 
