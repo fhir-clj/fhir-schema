@@ -200,8 +200,12 @@
 (def EMPTY_PATH [])
 
 (defn choice? [e]
-  ;; FIXME: if type is a list with count > 1
-  (str/ends-with? (:path e) "[x]"))
+  (or (str/ends-with? (:path e) "[x]")
+      ;; There might be multiple types
+      (and (> (count (:type e)) 1)
+           ;; But! there might be multiple types with the same name
+           ;; and that's not a choice type.
+           (> (count (set (map :code (:type e)))) 1))))
 
 (defn capitalize [s]
   (if (seq s) (str (str/upper-case (subs s 0 1)) (subs s 1)) s))
