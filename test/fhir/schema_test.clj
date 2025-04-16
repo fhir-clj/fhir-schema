@@ -1,5 +1,5 @@
 (ns fhir.schema-test
-  (:require [clojure.test :as t]
+  (:require [clojure.test :as t :refer [testing deftest]]
             [matcho.core :as matcho]
             [fhir.schema :as subj]))
 
@@ -15,6 +15,7 @@
                                          :system {:type "string"}}}
                     "Resource" {:elements {:resourceType {:type "code"}
                                            :id {:type "string"}}}
+                    "boolean" {:kind "primitive-type" :type "boolean"}
                     "code"   {:kind "primitive-type" :type "string"}
                     "url"    {:kind "primitive-type" :type "string"}
                     "string" {:kind "primitive-type" :type "string"}}})
@@ -29,7 +30,7 @@
      (matcho/match (:errors res#) ~errors-pat)
      res#))
 
-(t/deftest test-schema
+(deftest test-schema
 
   (match-schema {:type "string"} "string" empty?)
 
@@ -149,9 +150,11 @@
 
   (match-schema {:elements {:name {:elements {:use {:type "string" :pattern {:string "home"}}}}}}
                 {:name {:use "hotel"}}
-                [{:type :pattern :expected "home"}])
-
-  {:elements {:type "string"}}
+                [{:type :pattern
+                  :expected "home"
+                  :schema-path [:name :use :pattern]
+                  :got "hotel"
+                  :path [:name :use]}])
 
   {:kind "primitive-type"
    :url "http://hl7.org/fhir/StructureDefinition/string" ;; <type-name>
@@ -183,4 +186,34 @@
   ;;TODO: bundles -> {:type "Resource"}
   ;;TODO: slices
   ;;TODO: constraints
+
+  (testing "Patient"
+    (match-schema {:base "Resource"
+                   :elements {:resourceType {:type "code"}
+                              :name {:array true :type "HumanName"}
+                              :active {:type "boolean"}
+                              :extension {:array true :type "Extension"}}}
+                  {:resourceType "Patient"
+                   :name [{:family "Smith"
+                           :given ["John" "Jacob"]
+                           :use "official"}
+                          {:family "Smith"
+                           :given ["Johnny"]
+                           :use "nickname"}]
+                   :active true
+                   :extension [{:url "http://example.org/fhir/StructureDefinition/preferred-contact-method"
+                                :valueString "email"}]}
+                  empty?))
+
+  (testing "Nested extensions"
+    (match-schema {:elements {:extension {:array true
+                                          :type "Extension"
+                                          :elements {:extension {:array true
+                                                                 :type "Extension"}}}}}
+                  {:extension [{:url "http://example.org/parent"
+                                :extension [{:url "http://example.org/child"
+                                             :valueString "nested value"}]}]}
+                  empty?))
+
+  ;;TODO fixed should be exact match
   )
