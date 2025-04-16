@@ -217,3 +217,97 @@
 
   ;;TODO fixed should be exact match
   )
+
+(t/deftest primitive-types-extensions-quirks
+  (match-schema {:required ["gender"]
+                 :elements {:gender {:type "string"}}}
+                {:gender "male"}
+                empty?)
+
+  (t/testing "omit actual gender value,
+              provide primitive extension with data-absent reason,
+              :required check should pass"
+    (match-schema {:required ["gender"]
+                   :elements {:gender {:type "string"}}}
+                  {:_gender {:extension [{:url "data-absent-reason" :valueCode "asked-unknown"}]}}
+                  empty?))
+
+  (t/testing "null alignment and overall null usage in primitive extensions"
+    (t/testing "done right"
+      (match-schema {:elements {:code {:type "string"}}}
+                    {:code ["au" "nz"]
+                     :_code
+                     [nil
+                      {:extension
+                       [{:url "http://hl7.org/fhir/StructureDefinition/display"
+                         :valueString "New Zealand a.k.a Kiwiland"}]}]}
+                    empty?))
+
+    (t/testing "done right, one primitive sub part provided for empty value, and one as aligned extension for actual value"
+      (match-schema {:elements {:code {:type "string"}}}
+                    {:code [nil "nz"]
+                     :_code
+                     [{:extension [{:url "data-absent-reason" :valueCode "error"}]}
+                      {:extension
+                       [{:url "http://hl7.org/fhir/StructureDefinition/display"
+                         :valueString "New Zealand a.k.a Kiwiland"}]}]}
+                    empty?))
+
+    (t/testing "done wrong, all primitive sub-parts are nulled"
+      (match-schema {:elements {:code {:type "string"}}}
+                    {:code ["au" "nz"]
+                     :_code [nil nil]}
+                    [{}]) ;;??
+      )
+
+    (t/testing "done terribly wrong"
+      (match-schema {:elements {:code {:type "string"}}}
+                    {:code [nil nil]
+                     :_code [nil nil]}
+                    [{} {}]) ;; two errors about actual null values? what about empty _code?
+      )
+    )
+
+
+  )
+
+(t/deftest primitive-types
+  (match-schema {:elements {:gender {:type "string"}}}
+                {:gender "male"}
+                empty?)
+
+  (t/testing "basic type mismatch"
+    (match-schema {:elements {:gender {:type "string"}}}
+                  {:gender 1}
+                  [{:type :type
+                    :message "Expected type string"
+                    :value 1
+                    :schema-path [:gender :type "string" :type]
+                    :path [:gender]}]))
+
+  (t/testing "array non array shape mismatch"
+    (match-schema {:elements {:gender {:type "string"}}}
+                 {:gender ["male"]}
+                 [{:type :type/array
+                   :message "Expected not array"
+                   :path [:gender]
+                   :value ["male"]}])
+
+    (match-schema {:elements {:value {:type "string" :array true}}}
+                  {:value "male"}
+                  [{:type :type/array
+                    :message "Expected array"
+                    :path [:value]
+                    :value "male"
+                    :schema-path [:value :array]}]))
+
+  (t/testing "passing object-shape instead of the primitive"
+    (match-schema {:elements {:gender {:type "string"}}}
+                 {:gender {:value "male"}}
+                 [{:type :type
+                   :message "Expected type string"
+                   :value {:value "male"}
+                   :schema-path [:gender :type "string" :type]
+                   :path [:gender]}
+                  {:type :element/unknown :path [:gender :value]}] ;; Should we really need this check?
+                 )))
