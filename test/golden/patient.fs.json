@@ -106,7 +106,7 @@
         }
       },
       "isModifierReason" : "This element is labeled as a modifier because it might not be the main Patient resource, and the referenced patient should be used instead of this Patient record. This is when the link.type value is 'replaced-by'",
-      "required" : [ "type", "other" ],
+      "required" : [ "other", "type" ],
       "isSummary" : true
     },
     "active" : {

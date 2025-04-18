@@ -264,7 +264,7 @@
             }
           },
           "isModifierReason" : "If enableWhen is present and the condition evaluates to false, then the Questionnaire behaves as though the elements weren't actually present",
-          "required" : [ "answerReference", "operator", "answerDate", "answerTime", "answerString", "answerCoding", "question", "answerInteger", "answerQuantity", "answerDateTime", "answerBoolean", "answerDecimal", "answer" ]
+          "required" : [ "answer", "answerBoolean", "answerCoding", "answerDate", "answerDateTime", "answerDecimal", "answerInteger", "answerQuantity", "answerReference", "answerString", "answerTime", "operator", "question" ]
         },
         "answerOption" : {
           "short" : "Permitted answer",
@@ -321,7 +321,7 @@
               "index" : 58
             }
           },
-          "required" : [ "valueCoding", "valueString", "valueReference", "value", "valueDate", "valueTime", "valueInteger" ]
+          "required" : [ "value", "valueCoding", "valueDate", "valueInteger", "valueReference", "valueString", "valueTime" ]
         },
         "prefix" : {
           "short" : "E.g. \"1(a)\", \"2.5.3\"",
@@ -433,7 +433,7 @@
               "index" : 70
             }
           },
-          "required" : [ "valueCoding", "valueUri", "valueString", "valueReference", "valueDecimal", "valueAttachment", "valueDateTime", "value", "valueBoolean", "valueDate", "valueTime", "valueQuantity", "valueInteger" ]
+          "required" : [ "value", "valueAttachment", "valueBoolean", "valueCoding", "valueDate", "valueDateTime", "valueDecimal", "valueInteger", "valueQuantity", "valueReference", "valueString", "valueTime", "valueUri" ]
         },
         "maxLength" : {
           "short" : "No more than this many characters",
@@ -452,7 +452,7 @@
           "index" : 26
         }
       },
-      "required" : [ "type", "linkId" ]
+      "required" : [ "linkId", "type" ]
     },
     "useContext" : {
       "short" : "The context that the content is intended to support",

@@ -113,12 +113,12 @@
 
   (matcho/match
    (translate {:differential {:element [{:path "A.x" :min 1 :max "*"}]}})
-    {:required #{"x"}
+    {:required ["x"]
      :elements {:x {:array true, :min 1 :max nil?}}})
 
   (matcho/match
    (translate {:differential {:element [{:path "A.x" :min 1 :max "10"}]}})
-    {:required #{"x"}
+    {:required ["x"]
      :elements {:x {:array true, :_required nil? :min 1 :max 10}}})
 
   (matcho/match
@@ -187,7 +187,7 @@
         :patternCodeableConcept {:coding [{:system "CodeSystem", :code "LAB"}]}, :mustSupport true}
        {:path "R.category", :sliceName "Radiologylice", :min 4, :max "5",
         :patternCodeableConcept {:coding [{:system "CodeSystem", :code "RAD"}]}, :mustSupport true}]}})
-    {:required #{"category"}
+    {:required ["category"]
      :elements
      {:category
       {:mustSupport true,

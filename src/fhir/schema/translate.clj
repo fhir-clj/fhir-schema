@@ -1,5 +1,6 @@
 (ns fhir.schema.translate
   (:require [clojure.string :as str]
+            [clojure.walk :as walk]
             #_[clj-yaml.core]))
 
 (defn required-element?
@@ -392,6 +393,15 @@
   (->> (get-in structure-definition [:differential :element])
        (filterv (fn [{p :path}] (str/includes? p ".")))))
 
+(defn normalize-fhir-schema [schema]
+  (->> schema
+       (walk/postwalk
+        (fn [form]
+          (cond
+            (set? form) (->> form sort vec)
+            :else form)))
+       (walk/keywordize-keys)))
+
 ;; TODO: context {elements for elements, elements for resoruce}
 ;; TODO: discriminator [50%]
 ;; TODO: array and scalar only for resources or logical models
@@ -422,7 +432,7 @@
          (let [actions (calculate-actions prev-path EMPTY_PATH)
                new-value-stack (apply-actions value-stack actions {:index idx})]
            (assert (= 1 (count new-value-stack)))
-           (first new-value-stack))
+           (normalize-fhir-schema (first new-value-stack)))
 
          (choice? elem)
          (recur value-stack prev-path (into (union-elements elem) rest-elems) (inc idx))

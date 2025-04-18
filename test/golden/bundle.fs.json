@@ -52,7 +52,7 @@
           "index" : 6
         }
       },
-      "required" : [ "url", "relation" ]
+      "required" : [ "relation", "url" ]
     },
     "entry" : {
       "constraint" : {
@@ -164,7 +164,7 @@
               "index" : 20
             }
           },
-          "required" : [ "url", "method" ]
+          "required" : [ "method", "url" ]
         },
         "response" : {
           "short" : "Results of execution (transaction/batch/history)",
