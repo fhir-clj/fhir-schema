@@ -1,7 +1,9 @@
 {:paths ["src"]
  :deps {org.clojure/clojure       {:mvn/version "1.12.0"}
         cheshire/cheshire         {:mvn/version "5.10.2"}
-        healthsamurai/matcho      {:mvn/version "0.3.8"}}
+        healthsamurai/matcho      {:mvn/version "0.3.8"}
+        io.github.HealthSamurai/golden-clj {:git/url "https://github.com/HealthSamurai/golden-clj.git"
+                                            :git/sha "7b857ed93b9df8f74885a2746c65f1d8525e44a4"}}
 
  :aliases
  {:dev {:extra-deps {nrepl/nrepl       {:mvn/version "LATEST"}
