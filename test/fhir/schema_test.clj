@@ -265,12 +265,7 @@
                     {:code [nil nil]
                      :_code [nil nil]}
                     [{} {}]) ;; two errors about actual null values? what about empty _code?
-      )
-    )
-
-
-  )
-
+      )))
 (t/deftest primitive-types
   (match-schema {:elements {:gender {:type "string"}}}
                 {:gender "male"}
@@ -287,11 +282,11 @@
 
   (t/testing "array non array shape mismatch"
     (match-schema {:elements {:gender {:type "string"}}}
-                 {:gender ["male"]}
-                 [{:type :type/array
-                   :message "Expected not array"
-                   :path [:gender]
-                   :value ["male"]}])
+                  {:gender ["male"]}
+                  [{:type :type/array
+                    :message "Expected not array"
+                    :path [:gender]
+                    :value ["male"]}])
 
     (match-schema {:elements {:value {:type "string" :array true}}}
                   {:value "male"}
@@ -303,11 +298,11 @@
 
   (t/testing "passing object-shape instead of the primitive"
     (match-schema {:elements {:gender {:type "string"}}}
-                 {:gender {:value "male"}}
-                 [{:type :type
-                   :message "Expected type string"
-                   :value {:value "male"}
-                   :schema-path [:gender :type "string" :type]
-                   :path [:gender]}
-                  {:type :element/unknown :path [:gender :value]}] ;; Should we really need this check?
-                 )))
+                  {:gender {:value "male"}}
+                  [{:type :type
+                    :message "Expected type string"
+                    :value {:value "male"}
+                    :schema-path [:gender :type "string" :type]
+                    :path [:gender]}
+                   {:type :element/unknown :path [:gender :value]}] ;; Should we really need this check?
+                  )))
