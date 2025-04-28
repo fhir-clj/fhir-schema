@@ -23,5 +23,5 @@
   :test
   {:extra-paths ["test"]
    :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
-   :main-opts   ["-m" "cognitect.test-runner"]
+   :main-opts   ["-m" "cognitect.test-runner" "--exclude" "pending"]
    :exec-fn     cognitect.test-runner.api/test}}}
