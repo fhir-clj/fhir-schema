@@ -15,7 +15,8 @@
       "type" : "code",
       "binding" : {
         "strength" : "required",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/bundle-type|4.0.1"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/bundle-type|4.0.1",
+        "bindingName" : "BundleType"
       },
       "isSummary" : true,
       "index" : 1
@@ -104,7 +105,8 @@
               "type" : "code",
               "binding" : {
                 "strength" : "required",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/search-entry-mode|4.0.1"
+                "valueSet" : "http://hl7.org/fhir/ValueSet/search-entry-mode|4.0.1",
+                "bindingName" : "SearchEntryMode"
               },
               "isSummary" : true,
               "index" : 12
@@ -128,7 +130,8 @@
               "type" : "code",
               "binding" : {
                 "strength" : "required",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/http-verb|4.0.1"
+                "valueSet" : "http://hl7.org/fhir/ValueSet/http-verb|4.0.1",
+                "bindingName" : "HTTPVerb"
               },
               "isSummary" : true,
               "index" : 15

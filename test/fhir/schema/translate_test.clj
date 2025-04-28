@@ -401,6 +401,34 @@
         {:type "Reference",
          :refers ["http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/genomics-report"]}}}}}))
 
+(deftest extensions-on-element-binding-test
+  (matcho/match
+   (translate
+    {:differential
+     {:element
+      [{:path "Patient.gender",
+        :type [{:code "code"}],
+        :binding
+        {:extension
+         [{:url
+           "http://hl7.org/fhir/StructureDefinition/elementdefinition-bindingName",
+           :valueString "AdministrativeGender"}
+          {:url
+           "http://hl7.org/fhir/StructureDefinition/elementdefinition-isCommonBinding",
+           :valueBoolean true}],
+         :strength "required",
+         :description
+         "The gender of a person used for administrative purposes.",
+         :valueSet
+         "http://hl7.org/fhir/ValueSet/administrative-gender|6.0.0-ballot2"}}]}})
+    {:elements
+     {:gender
+      {:type "code",
+       :binding
+       {:strength "required",
+        :valueSet "http://hl7.org/fhir/ValueSet/administrative-gender|6.0.0-ballot2"
+        :bindingName "AdministrativeGender"}}}}))
+
 (defn sd->fhir-schema [sd-filename]
   (-> (slurp sd-filename)
       (json/parse-string true)

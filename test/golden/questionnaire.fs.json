@@ -15,7 +15,8 @@
       "array" : true,
       "binding" : {
         "strength" : "required",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/resource-types|4.0.1"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/resource-types|4.0.1",
+        "bindingName" : "ResourceType"
       },
       "isSummary" : true,
       "index" : 8
@@ -43,7 +44,8 @@
       "array" : true,
       "binding" : {
         "strength" : "extensible",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/jurisdiction"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/jurisdiction",
+        "bindingName" : "Jurisdiction"
       },
       "isSummary" : true,
       "index" : 14
@@ -67,60 +69,60 @@
     },
     "item" : {
       "constraint" : {
-        "que-6" : {
-          "human" : "Required and repeat aren't permitted for display items",
+        "que-5" : {
+          "human" : "Only 'choice' and 'open-choice' items can have answerValueSet",
           "severity" : "error",
-          "expression" : "type!='display' or (required.empty() and repeats.empty())"
-        },
-        "que-3" : {
-          "human" : "Display items cannot have a \"code\" asserted",
-          "severity" : "error",
-          "expression" : "type!='display' or code.empty()"
-        },
-        "que-4" : {
-          "human" : "A question cannot have both answerOption and answerValueSet",
-          "severity" : "error",
-          "expression" : "answerOption.empty() or answerValueSet.empty()"
-        },
-        "que-8" : {
-          "human" : "Initial values can't be specified for groups or display items",
-          "severity" : "error",
-          "expression" : "(type!='group' and type!='display') or initial.empty()"
-        },
-        "que-13" : {
-          "human" : "Can only have multiple initial values for repeating items",
-          "severity" : "error",
-          "expression" : "repeats=true or initial.count() <= 1"
+          "expression" : "(type ='choice' or type = 'open-choice' or type = 'decimal' or type = 'integer' or type = 'date' or type = 'dateTime' or type = 'time' or type = 'string' or type = 'quantity') or (answerValueSet.empty() and answerOption.empty())"
         },
         "que-12" : {
           "human" : "If there are more than one enableWhen, enableBehavior must be specified",
           "severity" : "error",
           "expression" : "enableWhen.count() > 2 implies enableBehavior.exists()"
         },
-        "que-11" : {
-          "human" : "If one or more answerOption is present, initial[x] must be missing",
-          "severity" : "error",
-          "expression" : "answerOption.empty() or initial.empty()"
-        },
         "que-9" : {
           "human" : "Read-only can't be specified for \"display\" items",
           "severity" : "error",
           "expression" : "type!='display' or readOnly.empty()"
+        },
+        "que-8" : {
+          "human" : "Initial values can't be specified for groups or display items",
+          "severity" : "error",
+          "expression" : "(type!='group' and type!='display') or initial.empty()"
+        },
+        "que-11" : {
+          "human" : "If one or more answerOption is present, initial[x] must be missing",
+          "severity" : "error",
+          "expression" : "answerOption.empty() or initial.empty()"
         },
         "que-1" : {
           "human" : "Group items must have nested items, display items cannot have nested items",
           "severity" : "error",
           "expression" : "(type='group' implies item.empty().not()) and (type.trace('type')='display' implies item.trace('item').empty())"
         },
+        "que-6" : {
+          "human" : "Required and repeat aren't permitted for display items",
+          "severity" : "error",
+          "expression" : "type!='display' or (required.empty() and repeats.empty())"
+        },
+        "que-13" : {
+          "human" : "Can only have multiple initial values for repeating items",
+          "severity" : "error",
+          "expression" : "repeats=true or initial.count() <= 1"
+        },
         "que-10" : {
           "human" : "Maximum length can only be declared for simple question types",
           "severity" : "error",
           "expression" : "(type in ('boolean' | 'decimal' | 'integer' | 'string' | 'text' | 'url' | 'open-choice')) or maxLength.empty()"
         },
-        "que-5" : {
-          "human" : "Only 'choice' and 'open-choice' items can have answerValueSet",
+        "que-4" : {
+          "human" : "A question cannot have both answerOption and answerValueSet",
           "severity" : "error",
-          "expression" : "(type ='choice' or type = 'open-choice' or type = 'decimal' or type = 'integer' or type = 'date' or type = 'dateTime' or type = 'time' or type = 'string' or type = 'quantity') or (answerValueSet.empty() and answerOption.empty())"
+          "expression" : "answerOption.empty() or answerValueSet.empty()"
+        },
+        "que-3" : {
+          "human" : "Display items cannot have a \"code\" asserted",
+          "severity" : "error",
+          "expression" : "type!='display' or code.empty()"
         }
       },
       "short" : "Questions and sections within the Questionnaire",
@@ -133,7 +135,8 @@
           "type" : "code",
           "binding" : {
             "strength" : "required",
-            "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-enable-behavior|4.0.1"
+            "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-enable-behavior|4.0.1",
+            "bindingName" : "EnableWhenBehavior"
           },
           "index" : 43
         },
@@ -164,7 +167,8 @@
           "type" : "code",
           "binding" : {
             "strength" : "required",
-            "valueSet" : "http://hl7.org/fhir/ValueSet/item-type|4.0.1"
+            "valueSet" : "http://hl7.org/fhir/ValueSet/item-type|4.0.1",
+            "bindingName" : "QuestionnaireItemType"
           },
           "index" : 27
         },
@@ -240,7 +244,8 @@
               "type" : "code",
               "binding" : {
                 "strength" : "required",
-                "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-enable-operator|4.0.1"
+                "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-enable-operator|4.0.1",
+                "bindingName" : "QuestionnaireItemOperator"
               },
               "index" : 30
             },
@@ -344,7 +349,8 @@
           "array" : true,
           "binding" : {
             "strength" : "example",
-            "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-questions"
+            "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-questions",
+            "bindingName" : "QuestionnaireConcept"
           },
           "index" : 24
         },
@@ -484,7 +490,8 @@
       "type" : "code",
       "binding" : {
         "strength" : "required",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/publication-status|4.0.1"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/publication-status|4.0.1",
+        "bindingName" : "PublicationStatus"
       },
       "isModifierReason" : "This is labeled as \"Is Modifier\" because applications should not use a retired {{title}} without due consideration",
       "isSummary" : true,
@@ -502,7 +509,8 @@
       "array" : true,
       "binding" : {
         "strength" : "example",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-questions"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/questionnaire-questions",
+        "bindingName" : "QuestionnaireConcept"
       },
       "isSummary" : true,
       "index" : 20

@@ -263,26 +263,40 @@
               (seq refers) (assoc :refers refers)))
           :else e)))
 
+(defn get-extension [exts url]
+  (->> exts
+       (filter #(= url (:url %)))
+       (first)))
+
+(def binding-name-ext "http://hl7.org/fhir/StructureDefinition/elementdefinition-bindingName")
+
 (defn build-element-binding [e structure-definition]
-  (cond
-    (:choices e)
-    (dissoc e :binding)
+  (let [normalize-binding (fn [binding]
+                            (let [exts (:extension binding)
+                                  binding-name-ext (get-extension exts binding-name-ext)]
+                              (cond-> (select-keys binding [:strength :valueSet])
+                                (some? binding-name-ext)
+                                ;; TODO: new field for codegen. Need to update FHIR Schema spec
+                                (assoc :bindingName (:valueString binding-name-ext)))))]
+    (cond
+      (:choices e)
+      (dissoc e :binding)
 
-    (:choiceOf e)
-    (let [decl-path (str (:id structure-definition) "." (:choiceOf e) "[x]")
-          decl (->> (get-in structure-definition [:snapshot :element])
-                    (filter #(= decl-path (:path %)))
-                    (first))]
-      (cond-> e
-        (:binding decl)
-        (assoc :binding (select-keys (:binding decl) [:strength :valueSet]))))
+      (:choiceOf e)
+      (let [decl-path (str (:id structure-definition) "." (:choiceOf e) "[x]")
+            decl (->> (get-in structure-definition [:snapshot :element])
+                      (filter #(= decl-path (:path %)))
+                      (first))]
+        (cond-> e
+          (:binding decl)
+          (assoc :binding (normalize-binding (:binding e)))))
 
-    (:valueSet (:binding e))
-    (assoc e :binding (select-keys (:binding e) [:strength :valueSet]))
+      (:valueSet (:binding e))
+      (assoc e :binding (normalize-binding (:binding e)))
 
-    :else ;; NOTE: dissoc to remove uncommon structure, e.g.:
-          ;; http://hl7.org/fhir/StructureDefinition/Task statusReason
-    (dissoc e :binding)))
+      :else ;; NOTE: dissoc to remove uncommon structure, e.g.:
+      ;; http://hl7.org/fhir/StructureDefinition/Task statusReason
+      (dissoc e :binding))))
 
 (defn build-element-constraints [e]
   (cond-> e

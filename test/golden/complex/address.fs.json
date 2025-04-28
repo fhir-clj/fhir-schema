@@ -10,7 +10,8 @@
       "type" : "code",
       "binding" : {
         "strength" : "required",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/address-use|4.0.1"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/address-use|4.0.1",
+        "bindingName" : "AddressUse"
       },
       "isModifierReason" : "This is labeled as \"Is Modifier\" because applications should not mistake a temporary or old address etc.for a current/permanent one",
       "isSummary" : true,
@@ -27,7 +28,8 @@
       "type" : "code",
       "binding" : {
         "strength" : "required",
-        "valueSet" : "http://hl7.org/fhir/ValueSet/address-type|4.0.1"
+        "valueSet" : "http://hl7.org/fhir/ValueSet/address-type|4.0.1",
+        "bindingName" : "AddressType"
       },
       "isSummary" : true,
       "index" : 1
