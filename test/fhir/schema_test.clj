@@ -8,7 +8,8 @@
                                             :use    {:type "Coding"}}}
                     "Extension" {:elements {:id {:type "code"}
                                             :url {:type "url"}
-                                            :valueString {:type "string"}}}
+                                            :valueString {:type "string"}
+                                            :valueCode   {:type "code"}}}
                     "Patient" {:base "Resource"
                                :elements {:name {:array true :type "HumanName"}}}
                     "Coding" {:elements {:code {:type "string"}
@@ -35,6 +36,7 @@
   (match-schema {:type "string"} "string" empty?)
 
   (match-schema {:type "string"} 1 [{:type :type :path []}])
+
   (match-schema {:type "string"} true [{:type :type :path []}])
 
   (match-schema {:elements {:name {:type "string"}}} {:name "ok"} empty?)
@@ -188,7 +190,7 @@
   ;;TODO: constraints
 
   ;; FIXME: 
-  #_(testing "Patient"
+  (testing "Patient"
       (match-schema {:base "Resource"
                      :elements {:resourceType {:type "code"}
                                 :name {:array true :type "HumanName"}
@@ -204,7 +206,8 @@
                      :active true
                      :extension [{:url "http://example.org/fhir/StructureDefinition/preferred-contact-method"
                                   :valueString "email"}]}
-                    empty?))
+                    empty?)
+    )
 
   (testing "Nested extensions"
     (match-schema {:elements {:extension {:array true
@@ -219,7 +222,14 @@
   ;;TODO fixed should be exact match
   )
 
-(t/deftest ^:pending primitive-types-extensions-quirks
+(t/deftest test-slices 
+  
+  
+  
+  
+  )
+
+(t/deftest  primitive-types-extensions-quirks
   (match-schema {:required ["gender"]
                  :elements {:gender {:type "string"}}}
                 {:gender "male"}
@@ -231,28 +241,31 @@
     (match-schema {:required ["gender"]
                    :elements {:gender {:type "string"}}}
                   {:_gender {:extension [{:url "data-absent-reason" :valueCode "asked-unknown"}]}}
-                  empty?))
+                  empty?)
+    )
 
   (t/testing "null alignment and overall null usage in primitive extensions"
     (t/testing "done right"
-      (match-schema {:elements {:code {:type "string"}}}
+      (match-schema {:elements {:code {:array true :type "string"}}}
                     {:code ["au" "nz"]
                      :_code
                      [nil
                       {:extension
                        [{:url "http://hl7.org/fhir/StructureDefinition/display"
                          :valueString "New Zealand a.k.a Kiwiland"}]}]}
-                    empty?))
+                    empty?)
+      )
 
     (t/testing "done right, one primitive sub part provided for empty value, and one as aligned extension for actual value"
-      (match-schema {:elements {:code {:type "string"}}}
+      (match-schema {:elements {:code {:array true :type "string"}}}
                     {:code [nil "nz"]
                      :_code
                      [{:extension [{:url "data-absent-reason" :valueCode "error"}]}
                       {:extension
                        [{:url "http://hl7.org/fhir/StructureDefinition/display"
                          :valueString "New Zealand a.k.a Kiwiland"}]}]}
-                    empty?))
+                    empty?)
+      )
 
     (t/testing "done wrong, all primitive sub-parts are nulled"
       (match-schema {:elements {:code {:type "string"}}}

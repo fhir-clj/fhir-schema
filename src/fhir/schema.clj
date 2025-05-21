@@ -247,7 +247,11 @@
 ;; handle primitive elements the right way
 (defn get-element-schemas [vctx k]
   ;; (println :get-schemas k (:schemas vctx))
-  (let [schemas (if (str/starts-with? (name k) "_") #{{:schema primitive-schema :path []}} #{})
+  (let [schemas (if (str/starts-with? (name k) "_") 
+                  ;; hack to inherit array from primitive element
+                  (let [is-array (is-array? {:schemas (get-element-schemas vctx (keyword (subs (name k) 1)))})]
+                    #{{:schema (assoc primitive-schema :array is-array) :path []}}) 
+                  #{})
         schemas (->> (:schemas vctx)
                      (mapcat (fn [{schema :schema path :path}]
                                (when-let [el-schema (get-in schema [:elements k])]
@@ -256,16 +260,27 @@
     ;; (println :< schemas)
     schemas))
 
-(defn validate-element [{path :path :as vctx} v]
+
+(defn check-item-in-primitive-extension [data k idx]
+  (map? (get-in data [(keyword (str "_" (name k))) idx])))
+
+(defn validate-element [{path :path :as vctx} k v & [parent-value]]
   ;; (println :validate-el (:path data-element) :is-array (is-array? vctx))
   (if-let [array-schema  (is-array? vctx)]
     (if-not (sequential? v)
       (add-error vctx {:type :type/array :message "Expected array" :path path :value v :schema-path (conj (:path array-schema) :array)})
-      (let [vctx (validate-array-rules vctx v)]
-        (->> v (reduce-indexed (fn [vctx idx v] (*validate (assoc vctx :path (conj path idx)) v)) vctx))))
+      (let [vctx (validate-array-rules vctx v)
+            schemas (:schemas vctx)]
+        (->> v (reduce-indexed
+                (fn [vctx idx v]
+                  (if (and (nil? v) (check-item-in-primitive-extension parent-value k idx))
+                    vctx
+                    (*validate (assoc vctx :path (conj path idx) :schemas schemas) v)))
+                vctx))))
     (if (sequential? v)
       (add-error vctx {:type :type/array :message "Expected not array" :path path :value v})
       (*validate (assoc vctx :path path) v))))
+
 
 (defn *validate [vctx data]
   ;; (println :*validate (:schemas vctx) data)
@@ -279,7 +294,7 @@
            (reduce
             (fn [vctx [k v]]
               (if-let [element-schemas (seq (get-element-schemas (assoc vctx :path path :schemas schemas) k))]
-                (validate-element (assoc vctx :schemas element-schemas :path (conj path k)) v)
+                (validate-element (assoc vctx :schemas element-schemas :path (conj path k)) k v data)
                 (add-error vctx {:type :element/unknown :path (conj path k)})))
             vctx))
       vctx)))
