@@ -289,7 +289,7 @@
                       (first))]
         (cond-> e
           (:binding decl)
-          (assoc :binding (normalize-binding (:binding e)))))
+          (assoc :binding (normalize-binding (:binding decl)))))
 
       (:valueSet (:binding e))
       (assoc e :binding (normalize-binding (:binding e)))
