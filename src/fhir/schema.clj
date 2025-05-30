@@ -247,10 +247,10 @@
 ;; handle primitive elements the right way
 (defn get-element-schemas [vctx k]
   ;; (println :get-schemas k (:schemas vctx))
-  (let [schemas (if (str/starts-with? (name k) "_") 
+  (let [schemas (if (str/starts-with? (name k) "_")
                   ;; hack to inherit array from primitive element
                   (let [is-array (is-array? {:schemas (get-element-schemas vctx (keyword (subs (name k) 1)))})]
-                    #{{:schema (assoc primitive-schema :array is-array) :path []}}) 
+                    #{{:schema (assoc primitive-schema :array is-array) :path []}})
                   #{})
         schemas (->> (:schemas vctx)
                      (mapcat (fn [{schema :schema path :path}]
@@ -259,7 +259,6 @@
                      (into schemas))]
     ;; (println :< schemas)
     schemas))
-
 
 (defn check-item-in-primitive-extension [data k idx]
   (map? (get-in data [(keyword (str "_" (name k))) idx])))
@@ -280,7 +279,6 @@
     (if (sequential? v)
       (add-error vctx {:type :type/array :message "Expected not array" :path path :value v})
       (*validate (assoc vctx :path path) v))))
-
 
 (defn *validate [vctx data]
   ;; (println :*validate (:schemas vctx) data)

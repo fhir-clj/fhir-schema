@@ -191,23 +191,22 @@
 
   ;; FIXME: 
   (testing "Patient"
-      (match-schema {:base "Resource"
-                     :elements {:resourceType {:type "code"}
-                                :name {:array true :type "HumanName"}
-                                :active {:type "boolean"}
-                                :extension {:array true :type "Extension"}}}
-                    {:resourceType "Patient"
-                     :name [{:family "Smith"
-                             :given ["John" "Jacob"]
-                             :use "official"}
-                            {:family "Smith"
-                             :given ["Johnny"]
-                             :use "nickname"}]
-                     :active true
-                     :extension [{:url "http://example.org/fhir/StructureDefinition/preferred-contact-method"
-                                  :valueString "email"}]}
-                    empty?)
-    )
+    (match-schema {:base "Resource"
+                   :elements {:resourceType {:type "code"}
+                              :name {:array true :type "HumanName"}
+                              :active {:type "boolean"}
+                              :extension {:array true :type "Extension"}}}
+                  {:resourceType "Patient"
+                   :name [{:family "Smith"
+                           :given ["John" "Jacob"]
+                           :use "official"}
+                          {:family "Smith"
+                           :given ["Johnny"]
+                           :use "nickname"}]
+                   :active true
+                   :extension [{:url "http://example.org/fhir/StructureDefinition/preferred-contact-method"
+                                :valueString "email"}]}
+                  empty?))
 
   (testing "Nested extensions"
     (match-schema {:elements {:extension {:array true
@@ -222,12 +221,7 @@
   ;;TODO fixed should be exact match
   )
 
-(t/deftest test-slices 
-  
-  
-  
-  
-  )
+(t/deftest test-slices)
 
 (t/deftest  primitive-types-extensions-quirks
   (match-schema {:required ["gender"]
@@ -241,8 +235,7 @@
     (match-schema {:required ["gender"]
                    :elements {:gender {:type "string"}}}
                   {:_gender {:extension [{:url "data-absent-reason" :valueCode "asked-unknown"}]}}
-                  empty?)
-    )
+                  empty?))
 
   (t/testing "null alignment and overall null usage in primitive extensions"
     (t/testing "done right"
@@ -253,8 +246,7 @@
                       {:extension
                        [{:url "http://hl7.org/fhir/StructureDefinition/display"
                          :valueString "New Zealand a.k.a Kiwiland"}]}]}
-                    empty?)
-      )
+                    empty?))
 
     (t/testing "done right, one primitive sub part provided for empty value, and one as aligned extension for actual value"
       (match-schema {:elements {:code {:array true :type "string"}}}
@@ -264,8 +256,7 @@
                       {:extension
                        [{:url "http://hl7.org/fhir/StructureDefinition/display"
                          :valueString "New Zealand a.k.a Kiwiland"}]}]}
-                    empty?)
-      )
+                    empty?))
 
     (t/testing "done wrong, all primitive sub-parts are nulled"
       (match-schema {:elements {:code {:type "string"}}}
