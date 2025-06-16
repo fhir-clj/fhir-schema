@@ -269,6 +269,7 @@
        (first)))
 
 (def binding-name-ext "http://hl7.org/fhir/StructureDefinition/elementdefinition-bindingName")
+(def default-type-ext "http://hl7.org/fhir/StructureDefinition/elementdefinition-defaulttype")
 
 (defn build-element-binding [e structure-definition]
   (let [normalize-binding (fn [binding]
@@ -352,13 +353,15 @@
   (when-not (<= (count (get-in e [:type])) 1)
     (warn (str "More than one type specified: " (get-in e [:type]))))
   (let [type-from-extension (extract-type-from-extension e)
+        def-type-ext (get-extension (:extension e) default-type-ext)
         tp (get-in e [:type 0 :code])]
-    (cond type-from-extension (assoc e :type type-from-extension)
-          (:type e) (assoc e :type tp)
-          :else e)))
+    (cond-> (cond type-from-extension (assoc e :type type-from-extension)
+                  (:type e)           (assoc e :type tp)
+                  :else               e)
+      (some? def-type-ext) (assoc :defaultType (:valueCanonical def-type-ext)))))
 
 (defn clear-element [e]
-  (dissoc e :path :slicing :sliceName :id :mapping :extension :example :alias :condition :comment :definition :requirements))
+  (dissoc e :path :slicing :sliceName :id :mapping :example :alias :condition :comment :definition :requirements))
 
 (defn content-reference->element-reference [content-reference structure-definition]
   (let [[_ & path-parts] (-> content-reference (subs 1) (str/split #"[.]"))]
@@ -391,7 +394,8 @@
       build-element-extension
       build-element-cardinality
       build-element-type
-      process-patterns))
+      process-patterns
+      (dissoc :extension)))
 
 (defn build-resource-header [structure-definition]
   (-> (select-keys structure-definition [:name :type :url :version :description :package_name :package_version :package_id :kind :derivation])
