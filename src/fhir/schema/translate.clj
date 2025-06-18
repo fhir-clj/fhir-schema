@@ -224,18 +224,23 @@
                     (assoc :choices (->> (:type e) (mapv (fn [{c :code}] (str fs-prefix (capitalize c)))))))]))))
 
 (defn process-patterns [e]
-  (->> e
-       (reduce
-        (fn [acc [k v]]
-          (cond
-            (str/starts-with? (name k) "pattern")
-            (assoc acc :pattern {:type (str/replace (name k) #"^pattern" "") :value v})
+  (let [e-with-pattern
+        (->> e
+             (reduce
+              (fn [acc [k v]]
+                (cond
+                  (str/starts-with? (name k) "pattern")
+                  (assoc acc :pattern {:type (str/replace (name k) #"^pattern" "") :value v})
 
-            (str/starts-with? (name k) "fixed")
-            (assoc acc :pattern {:type (str/replace (name k) #"^fixed" "") :value v})
+                  (str/starts-with? (name k) "fixed")
+                  (assoc acc :pattern {:type (str/replace (name k) #"^fixed" "") :value v})
 
-            :else (assoc acc k v)))
-        {})))
+                  :else (assoc acc k v)))
+              {}))]
+    (cond-> e-with-pattern
+      (and (nil? (:type e))
+           (some? (get-in e [:pattern :type])))
+      (assoc :type (get-in e [:pattern :type])))))
 
 (defn base-profile? [tp]
   (re-matches #"http://hl7.org/fhir/StructureDefinition/[a-zA-Z]+" tp))
