@@ -349,7 +349,7 @@
 (defn warn [msg]
   (println (format "WARNING: %s" msg)))
 
-(defn build-element-type [e]
+(defn build-element-type [e structure-definition]
   (when-not (<= (count (get-in e [:type])) 1)
     (warn (str "More than one type specified: " (get-in e [:type]))))
   (let [type-from-extension (extract-type-from-extension e)
@@ -358,7 +358,9 @@
     (cond-> (cond type-from-extension (assoc e :type type-from-extension)
                   (:type e)           (assoc e :type tp)
                   :else               e)
-      (some? def-type-ext) (assoc :defaultType (:valueCanonical def-type-ext)))))
+      ;; TODO: add defaultType to FHIR Schema spec
+      (and (= (:kind structure-definition) "logical")
+           (some? def-type-ext)) (assoc :defaultType (:valueCanonical def-type-ext)))))
 
 (defn clear-element [e]
   (dissoc e :path :slicing :sliceName :id :mapping :example :alias :condition :comment :definition :requirements))
@@ -393,7 +395,7 @@
       (build-element-content-reference structure-definition)
       build-element-extension
       build-element-cardinality
-      build-element-type
+      (build-element-type structure-definition)
       process-patterns
       (dissoc :extension)))
 
