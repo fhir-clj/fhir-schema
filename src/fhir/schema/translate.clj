@@ -211,6 +211,12 @@
 (defn capitalize [s]
   (if (seq s) (str (str/upper-case (subs s 0 1)) (subs s 1)) s))
 
+(defn uncapitalize [s]
+  (if (and (string? s)
+           (seq s))
+    (str (clojure.string/lower-case (subs s 0 1)) (subs s 1))
+    s))
+
 (defn union-elements [{p :path :as e}]
   (let [prefix (str/replace p #"\[x\]" "")
         fs-prefix (last (str/split prefix #"\."))]
@@ -223,6 +229,27 @@
                     (dissoc :type)
                     (assoc :choices (->> (:type e) (mapv (fn [{c :code}] (str fs-prefix (capitalize c)))))))]))))
 
+(defn pattern-type-normalize [n]
+  (get {"Instant" "instant"
+        "Time" "time"
+        "Date" "date"
+        "DateTime" "dateTime"
+        "Decimal" "decimal"
+        "Boolean" "boolean"
+        "Integer" "integer"
+        "String" "string"
+        "Uri" "uri"
+        "Base64Binary" "base64Binary"
+        "Code" "code"
+        "Id" "id"
+        "Oid" "oid"
+        "UnsignedInt" "unsignedInt"
+        "PositiveInt" "positiveInt"
+        "Markdown" "markdown"
+        "Url" "url"
+        "Canonical" "canonical"
+        "Uuid" "uuid"} n n))
+
 (defn process-patterns [e]
   (let [e-with-pattern
         (->> e
@@ -230,17 +257,23 @@
               (fn [acc [k v]]
                 (cond
                   (str/starts-with? (name k) "pattern")
-                  (assoc acc :pattern {:type (str/replace (name k) #"^pattern" "") :value v})
+                  (assoc acc :pattern {:type (-> (name k)
+                                                 (str/replace #"^pattern" "")
+                                                 (pattern-type-normalize))
+                                       :value v})
 
                   (str/starts-with? (name k) "fixed")
-                  (assoc acc :pattern {:type (str/replace (name k) #"^fixed" "") :value v})
+                  (assoc acc :pattern {:type (-> (name k)
+                                                 (str/replace #"^fixed" "")
+                                                 (pattern-type-normalize))
+                                       :value v})
 
                   :else (assoc acc k v)))
               {}))]
     (cond-> e-with-pattern
-      (and (nil? (:type e))
-           (some? (get-in e [:pattern :type])))
-      (assoc :type (get-in e [:pattern :type])))))
+      (and (nil? (:type e-with-pattern))
+           (some? (get-in e-with-pattern [:pattern :type])))
+      (assoc :type (get-in e-with-pattern [:pattern :type])))))
 
 (defn base-profile? [tp]
   (re-matches #"http://hl7.org/fhir/StructureDefinition/[a-zA-Z]+" tp))
