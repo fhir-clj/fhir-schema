@@ -217,17 +217,24 @@
     (str (clojure.string/lower-case (subs s 0 1)) (subs s 1))
     s))
 
+(defn canonical-to-name [name-or-url]
+  (-> name-or-url
+      (str/split #"/")
+      (last)))
+
 (defn union-elements [{p :path :as e}]
   (let [prefix (str/replace p #"\[x\]" "")
-        fs-prefix (last (str/split prefix #"\."))]
+        fs-prefix (last (str/split prefix #"\."))
+        choice-name (fn [pre c] (str pre (capitalize (canonical-to-name c))))]
     (->> (:type e)
          (mapv (fn [{c :code :as tp}]
                  (-> e
                      (dissoc :binding)
-                     (assoc :path (str prefix (capitalize c)) :type [tp] :choiceOf fs-prefix))))
+                     (assoc :path (choice-name prefix c) :type [tp] :choiceOf fs-prefix))))
          (into [(-> (assoc e :path prefix)
                     (dissoc :type)
-                    (assoc :choices (->> (:type e) (mapv (fn [{c :code}] (str fs-prefix (capitalize c)))))))]))))
+                    (assoc :choices (->> (:type e)
+                                         (mapv (fn [{c :code}] (choice-name fs-prefix c))))))]))))
 
 (defn pattern-type-normalize [n]
   (get {"Instant" "instant"
