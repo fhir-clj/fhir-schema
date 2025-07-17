@@ -269,7 +269,7 @@
             }
           },
           "isModifierReason" : "If enableWhen is present and the condition evaluates to false, then the Questionnaire behaves as though the elements weren't actually present",
-          "required" : [ "answer", "answerBoolean", "answerCoding", "answerDate", "answerDateTime", "answerDecimal", "answerInteger", "answerQuantity", "answerReference", "answerString", "answerTime", "operator", "question" ]
+          "required" : [ "answer", "operator", "question" ]
         },
         "answerOption" : {
           "short" : "Permitted answer",
@@ -326,7 +326,7 @@
               "index" : 58
             }
           },
-          "required" : [ "value", "valueCoding", "valueDate", "valueInteger", "valueReference", "valueString", "valueTime" ]
+          "required" : [ "value" ]
         },
         "prefix" : {
           "short" : "E.g. \"1(a)\", \"2.5.3\"",
@@ -439,7 +439,7 @@
               "index" : 70
             }
           },
-          "required" : [ "value", "valueAttachment", "valueBoolean", "valueCoding", "valueDate", "valueDateTime", "valueDecimal", "valueInteger", "valueQuantity", "valueReference", "valueString", "valueTime", "valueUri" ]
+          "required" : [ "value" ]
         },
         "maxLength" : {
           "short" : "No more than this many characters",

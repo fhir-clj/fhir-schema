@@ -159,7 +159,8 @@
 
   (matcho/match
    (translate {:differential {:element union-els}})
-    {:elements
+    {:required nil
+     :elements
      {:value         {:choices ["valueString"
                                 "valueQuantity"]},
       :valueString   {:type "string" :choiceOf "value"},
@@ -180,6 +181,21 @@
         :valueString   {:type "string" :choiceOf "value"},
         :valueQuantity {:type "Quantity" :choiceOf "value"
                         :elements {:unit {:short "unit"}}}}}))
+
+  (def union-els-required
+    [{:path "R.value[x]"  :type [{:code "string"}
+                                 {:code "Quantity"}] :min 1 :max "1"}
+     {:path "R.valueQuantity.unit" :short "unit"}])
+
+  (matcho/match
+   (translate {:differential {:element union-els-required}})
+    {:required ["value"]
+     :elements
+     {:value         {:choices ["valueString"
+                                "valueQuantity"]},
+      :valueString   {:type "string" :choiceOf "value"},
+      :valueQuantity {:type "Quantity" :choiceOf "value"
+                      :elements {:unit {:short "unit"}}}}})
 
   ;; (clojure.pprint/pprint (translate els))
 

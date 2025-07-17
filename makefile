@@ -1,6 +1,6 @@
 .PHONY: install-hooks repl test clean build run format lint check fix check-json update-golden deps
 
-all: test lint format
+all: format lint update-golden
 
 install-hooks:
 	@bash scripts/install-hooks.sh

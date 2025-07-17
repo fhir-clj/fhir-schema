@@ -164,9 +164,14 @@
 
 (defn add-element [el last-v peek-v]
   (let [base (if (= :extension el)
-               (assoc-in last-v [:extensions] (slicing-to-extensions peek-v)) last-v)]
+               (assoc-in last-v [:extensions] (slicing-to-extensions peek-v))
+               last-v)
+        el-name (if (some? (:choiceOf peek-v))
+                  (:choiceOf peek-v)
+                  (name el))]
     (cond-> (assoc-in base [:elements el] (dissoc peek-v :_required))
-      (:_required peek-v) (update :required (fn [x] (conj (or x #{}) (name el)))))))
+      (:_required peek-v)
+      (update :required (fn [x] (conj (or x #{}) el-name))))))
 
 ;; (defn debug-action [item stack]
 ;;   (println :> item)
@@ -375,7 +380,8 @@
         mx (assoc :max mx)))))
 
 (defn build-element-cardinality [e]
-  (let [mn (parse-min e) mx (parse-max e)]
+  (let [mn (parse-min e)
+        mx (parse-max e)]
     (cond-> (dissoc e :min :max)
       (not (:url e))
       (cond->
