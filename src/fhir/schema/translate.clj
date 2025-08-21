@@ -227,19 +227,34 @@
       (str/split #"/")
       (last)))
 
-(defn union-elements [{p :path :as e}]
-  (let [prefix (str/replace p #"\[x\]" "")
-        fs-prefix (last (str/split prefix #"\."))
-        choice-name (fn [pre c] (str pre (capitalize (canonical-to-name c))))]
-    (->> (:type e)
-         (mapv (fn [{c :code :as tp}]
-                 (-> e
-                     (dissoc :binding)
-                     (assoc :path (choice-name prefix c) :type [tp] :choiceOf fs-prefix))))
-         (into [(-> (assoc e :path prefix)
-                    (dissoc :type)
-                    (assoc :choices (->> (:type e)
-                                         (mapv (fn [{c :code}] (choice-name fs-prefix c))))))]))))
+(defn remove-empty-values [m]
+  (->> m
+       (remove (fn [[_ v]] (or (nil? v)
+                               (and (vector? v) (empty? v)))))
+       (into {})))
+
+(defn choice-elements [{p :path :as e}]
+  (let [abs-choice-name  (str/replace p #"\[x\]" "")
+        choice-name      (->> (str/split abs-choice-name #"\.")
+                              (last))
+        mk-instance-name (fn [pre c] (str pre (capitalize (canonical-to-name c))))
+
+        choice-def
+        (-> e
+            (dissoc :type)
+            (assoc :path abs-choice-name)
+            (assoc :choices (->> (:type e)
+                                 (mapv (fn [{c :code}] (mk-instance-name choice-name c)))))
+            (remove-empty-values))
+
+        choice-instances
+        (mapv (fn [{c :code :as tp}]
+                (-> e
+                    (dissoc :binding)
+                    (assoc :path (mk-instance-name abs-choice-name c) :type [tp] :choiceOf choice-name)))
+              (:type e))]
+
+    (into [choice-def] choice-instances)))
 
 (defn pattern-type-normalize [n]
   (get {"Instant" "instant"
@@ -506,7 +521,7 @@
            (normalize-fhir-schema (first new-value-stack)))
 
          (choice? elem)
-         (recur value-stack prev-path (into (union-elements elem) rest-elems) (inc idx))
+         (recur value-stack prev-path (into (choice-elements elem) rest-elems) (inc idx))
 
          :else
          (let [new-path        (enrich-path prev-path (parse-path elem))
