@@ -546,7 +546,7 @@
                elem         (merge choice-inst
                                    elem
                                    {:id choice-def-path})]
-           (when (= 1 (count (:type choice-inst)))
+           (when-not (= 1 (count (:type choice-inst)))
              (warn (str "Choice element instance with single type: " (:path choice-inst))))
 
            (recur value-stack prev-path (into [elem] rest-elems) idx))
