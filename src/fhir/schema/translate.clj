@@ -503,22 +503,17 @@
 ;; 3 calculate actions from path and previous path
 ;; 4 apply actions
 
-(defn choice-instance-path->pre-choice [sd-ancestors]
-  (some->> sd-ancestors
-           (reverse)
-           (map (fn [sd]
-                  (let [elems             (get-in sd [:differential :element])
-                        choice-elems      (filter fhir.schema.translate/choice? elems)
-                        choice-elem-names (->> choice-elems
-                                               (map fhir.schema.translate/choice-elements)
-                                               (apply concat)
-                                               (keep (fn [choice-elem]
-                                                       (when (:choiceOf choice-elem)
-                                                         [(:path choice-elem)
-                                                          (select-keys choice-elem [:path :choiceOf :type])]))))]
-                    choice-elem-names)))
-           (apply concat)
-           (into {})))
+(defn choice-path->choice [sd-ancestors]
+  (->> (for [sd          (reverse sd-ancestors)
+             elem        (get-in sd [:differential :element])
+             :when       (fhir.schema.translate/choice? elem)
+             :let        [[choice-def & choice-instances]
+                          (fhir.schema.translate/choice-elements elem)]
+             choice-inst choice-instances]
+         [(:path choice-inst)
+          {:choice-def-path (:path choice-def)
+           :choice-inst     choice-inst}])
+       (into {})))
 
 (defn translate
   ([structure-definition]
@@ -526,17 +521,17 @@
   ([{package-meta :package-meta
      sd-ancestors :structure-definition-ancestors} structure-definition]
    (let [is-primitive (= "primitive-type" (:kind structure-definition))
-         choice-instances (choice-instance-path->pre-choice sd-ancestors)
-         res (cond-> (build-resource-header structure-definition)
-               package-meta (assoc :package-meta package-meta))]
-     (loop [value-stack [res]
-            prev-path EMPTY_PATH
+         choices      (choice-path->choice sd-ancestors)
+         res          (cond-> (build-resource-header structure-definition)
+                        package-meta (assoc :package-meta package-meta))]
+     (loop [value-stack         [res]
+            prev-path           EMPTY_PATH
             [elem & rest-elems] (get-differential structure-definition)
-            idx 0]
+            idx                 0]
        (cond
          (or (nil? elem)
              is-primitive)
-         (let [actions (calculate-actions prev-path EMPTY_PATH)
+         (let [actions         (calculate-actions prev-path EMPTY_PATH)
                new-value-stack (apply-actions value-stack actions {:index idx})]
            (assert (= 1 (count new-value-stack)))
            (normalize-fhir-schema (first new-value-stack)))
@@ -545,8 +540,16 @@
          (recur value-stack prev-path (into (choice-elements elem) rest-elems) (inc idx))
 
          (and (nil? (:choiceOf elem))
-              (contains? choice-instances (:path elem)))
-         (recur value-stack prev-path (into [(get choice-instances (:path elem))] rest-elems) idx)
+              (contains? choices (:path elem)))
+         (let [{choice-inst     :choice-inst
+                choice-def-path :choice-def-path} (get choices (:path elem))
+               elem         (merge choice-inst
+                                   elem
+                                   {:id choice-def-path})]
+           (when (= 1 (count (:type choice-inst)))
+             (warn (str "Choice element instance with single type: " (:path choice-inst))))
+
+           (recur value-stack prev-path (into [elem] rest-elems) idx))
 
          :else
          (let [new-path        (enrich-path prev-path (parse-path elem))
